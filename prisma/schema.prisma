@@ -18,6 +18,7 @@ model Job {
 	id             String    @id @default(cuid())
 	type           String
 	status         String    @default("PENDING") // PENDING, PROCESSING, RETRY_PENDING, COMPLETED, FAILED
+	retriedCount   Int       @default(0)
 	payload        String
 	result         String?
 	createdAt      DateTime  @default(now())
