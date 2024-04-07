@@ -19,6 +19,11 @@ queue = "job-controller"
 max_batch_size = 10 # optional: defaults to 10
 max_batch_timeout = 5 # optional: defaults to 5 seconds
 
+[[services]]
+binding = "JOB"
+service = "example-flaky-job"
+entrypoint = "ExampleFlakyJob"
+
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
 # Note: Use secrets to store sensitive data.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
