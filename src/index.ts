@@ -1,4 +1,4 @@
-import type { ExampleFlakyJob } from '../jobs/example-flaky-job/src/index.js';
+import type ExampleFlakyJob from '../jobs/example-flaky-job/src/index.js';
 import { Job, PrismaClient } from '@prisma/client';
 import { PrismaD1 } from '@prisma/adapter-d1';
 import { Hono } from 'hono';

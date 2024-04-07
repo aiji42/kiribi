@@ -22,7 +22,6 @@ max_batch_timeout = 5 # optional: defaults to 5 seconds
 [[services]]
 binding = "JOB"
 service = "example-flaky-job"
-entrypoint = "ExampleFlakyJob"
 
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
 # Note: Use secrets to store sensitive data.
