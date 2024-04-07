@@ -1,0 +1,36 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Create new job</title>
+</head>
+<body>
+	<form action="/jobs/create">
+		<dl>
+			<dt><label for="type">Job type</label></dt>
+			<dd>
+				<input id="type" type="text" name="type" placeholder="Type">
+			</dd>
+			<dt><label for="payload">Payload</label></dt>
+			<dd>
+				<textarea id="payload" name="payload" placeholder="{}"></textarea>
+			</dd>
+		</dl>
+		<button type="submit">Create</button>
+	</form>
+	<script>
+		document.querySelector('form').addEventListener('submit', function(e) {
+			e.preventDefault();
+			const type = document.querySelector('input[name="type"]').value;
+			const payload = document.querySelector('textarea[name="payload"]').value;
+			fetch('/jobs/create', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ type, payload })
+			})
+		});
+	</script>
+</body>
+</html>

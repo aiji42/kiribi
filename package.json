@@ -20,6 +20,7 @@
   "dependencies": {
     "@prisma/adapter-d1": "^5.12.1",
     "@prisma/client": "5.12.1",
-    "hono": "^4.2.2"
+    "hono": "^4.2.2",
+    "zod": "^3.22.4"
   }
 }

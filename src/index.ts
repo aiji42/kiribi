@@ -2,6 +2,10 @@ import type ExampleFlakyJob from '../jobs/example-flaky-job/src/index.js';
 import { Job, PrismaClient } from '@prisma/client';
 import { PrismaD1 } from '@prisma/adapter-d1';
 import { Hono } from 'hono';
+import { z } from 'zod';
+import { validator } from 'hono/validator';
+// @ts-ignore
+import newHTML from './new.html';
 
 export type Bindings = {
 	DB: D1Database;
@@ -26,21 +30,52 @@ app.get('/jobs', async (c) => {
 	return c.json(await prisma.job.findMany());
 });
 
-app.get('/jobs/create', async (c) => {
-	const adapter = new PrismaD1(c.env.DB);
-	const prisma = new PrismaClient({ adapter });
+app.get('/jobs/new', async (c) => {
+	return c.html(newHTML);
+});
 
-	const res = await prisma.job.create({
-		data: {
-			type: 'JOB',
-			payload: JSON.stringify({}),
-		},
+const makeSchema = (env: Bindings) =>
+	z.object({
+		type: z.string().refine((v) => v in env, { message: 'Invalid job type' }),
+		payload: z.string().refine(
+			(v) => {
+				try {
+					JSON.parse(v);
+					return true;
+				} catch {
+					return false;
+				}
+			},
+			{ message: 'Invalid JSON' },
+		),
 	});
 
-	await c.env.QUEUE.send(res);
+app.post(
+	'/jobs/create',
+	validator('json', (value, c) => {
+		const schema = makeSchema(c.env);
+		const parsed = schema.safeParse(value);
+		if (!parsed.success) return c.text('Invalid!', 401);
+		return parsed.data;
+	}),
+	async (c) => {
+		const adapter = new PrismaD1(c.env.DB);
+		const prisma = new PrismaClient({ adapter });
 
-	return c.text('OK');
-});
+		const { type, payload } = c.req.valid('json');
+
+		const res = await prisma.job.create({
+			data: {
+				type,
+				payload: JSON.stringify(JSON.parse(payload)),
+			},
+		});
+
+		await c.env.QUEUE.send(res);
+
+		return c.text('OK');
+	},
+);
 
 export default {
 	fetch: app.fetch,
@@ -58,7 +93,8 @@ export default {
 				});
 
 				try {
-					const res = await env[msg.body.type].execute({ message: 'message' });
+					// @ts-ignore
+					const res = await env[msg.body.type].execute(JSON.parse(msg.body.payload));
 					console.log('Completed job', msg.body.id);
 					const completedAt = new Date();
 
@@ -79,7 +115,7 @@ export default {
 
 					await prisma.job.update({
 						where: { id: msg.body.id },
-						data: { status: JobStatus.retryPending, finishedAt, result: JSON.stringify(e), retriedCount: { increment: 1 } },
+						data: { status: JobStatus.retryPending, finishedAt, result: String(e), retriedCount: { increment: 1 } },
 					});
 					msg.retry({ delaySeconds: 3 });
 				}

@@ -1,12 +1,13 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 
 export default class extends WorkerEntrypoint {
-	async execute(payload: { message: string }) {
-		console.log('Executing job', payload.message);
+	async execute(payload: { delay: number; chanceOfSuccess: number }) {
+		console.log('Executing job', payload);
+		const { delay, chanceOfSuccess } = payload;
 
-		await new Promise((resolve) => setTimeout(resolve, 3000));
+		await new Promise((resolve) => setTimeout(resolve, delay));
 
-		if (Math.random() < 0.5) throw new Error('Flaky job failed');
+		if (Math.random() > chanceOfSuccess) throw new Error('Flaky job failed');
 
 		return { result: 'OK' };
 	}
