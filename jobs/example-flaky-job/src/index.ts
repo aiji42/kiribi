@@ -1,7 +1,6 @@
-import { WorkerEntrypoint } from 'cloudflare:workers';
 import { MakiJobWorker } from '../../../packages/maki/src';
 
-export default class extends WorkerEntrypoint implements MakiJobWorker {
+export default class extends MakiJobWorker {
 	async perform(payload: { delay: number; chance: number }) {
 		console.log('Performing job', payload);
 		const { delay, chance } = payload;

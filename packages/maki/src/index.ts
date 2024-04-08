@@ -98,6 +98,7 @@ class Maki extends WorkerEntrypoint<Bindings> {
 
 					if (retryable) {
 						console.log('Retrying job', msg.body.id);
+						// FIXME: delaySeconds
 						msg.retry();
 					} else {
 						console.log('Failed job', msg.body.id);
@@ -118,6 +119,10 @@ class Maki extends WorkerEntrypoint<Bindings> {
 
 export default Maki;
 
-export interface MakiJobWorker<P extends unknown = any, R extends unknown = any> {
-	perform: (payload: P) => R | Promise<R>;
+export abstract class MakiJobWorker<P extends unknown = any, R extends unknown = any> extends WorkerEntrypoint {
+	fetch(request: Request): Response | Promise<Response> {
+		return new Response('This is Maki Job Worker');
+	}
+
+	abstract perform(payload: P): R | Promise<R>;
 }
