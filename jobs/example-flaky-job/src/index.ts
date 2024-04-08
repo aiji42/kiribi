@@ -5,13 +5,13 @@ export default class extends WorkerEntrypoint {
 		return new Response('OK');
 	}
 
-	async execute(payload: { delay: number; chanceOfSuccess: number }) {
-		console.log('Executing job', payload);
-		const { delay, chanceOfSuccess } = payload;
+	async perform(payload: { delay: number; chance: number }) {
+		console.log('Performing job', payload);
+		const { delay, chance } = payload;
 
 		await new Promise((resolve) => setTimeout(resolve, delay));
 
-		if (Math.random() > chanceOfSuccess) throw new Error('Flaky job failed');
+		if (Math.random() > chance) throw new Error('Failed to perform job');
 
 		return { result: 'OK' };
 	}

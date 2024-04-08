@@ -1,0 +1,23 @@
+name = "maki-dev"
+compatibility_date = "2024-04-03"
+main = "src/worker.ts"
+
+[[d1_databases]]
+binding = "MAKI_DB" # i.e. available in your Worker on env.DB
+database_name = "job-controller"
+database_id = "40855cf6-27e1-4853-81f5-e55d07ae4982"
+
+[[queues.producers]]
+binding = "MAKI_QUEUE"
+queue = "job-controller"
+
+[[queues.consumers]]
+queue = "job-controller"
+# Required: this should match the name of the queue you created in step 3.
+# If you misspell the name, you will receive an error when attempting to publish your Worker.
+max_batch_size = 10 # optional: defaults to 10
+max_batch_timeout = 5 # optional: defaults to 5 seconds
+
+[[services]]
+binding = "EXAMPLE_TASK_1"
+service = "example-flaky-job"

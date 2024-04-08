@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
+    "dev": "npx concurrently -n example-flaky-job,maki,main -k \"yarn run dev:example-flaky-job\" \"sleep 2 && yarn run dev:maki\" \"sleep 4 && yarn run dev:main\"",
+    "dev:main": "npx wrangler dev --port 9000",
+    "dev:maki": "npx wrangler dev -c ./packages/maki/wrangler.toml --port 9001",
+    "dev:example-flaky-job": "npx wrangler dev -c ./jobs/example-flaky-job/wrangler.toml --port 9002",
     "start": "wrangler dev",
     "test": "vitest"
   },
