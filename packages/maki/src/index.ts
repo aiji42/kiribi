@@ -117,3 +117,7 @@ class Maki extends WorkerEntrypoint<Bindings> {
 }
 
 export default Maki;
+
+export interface MakiJobWorker<P extends unknown = any, R extends unknown = any> {
+	perform: (payload: P) => R | Promise<R>;
+}
