@@ -9,7 +9,9 @@
 		<dl>
 			<dt><label for="type">Job type</label></dt>
 			<dd>
-				<input id="type" type="text" name="type" placeholder="Type">
+        <select id="type" type="text" name="type">
+          #__options
+        </select>
 			</dd>
 			<dt><label for="payload">Payload</label></dt>
 			<dd>
@@ -21,7 +23,7 @@
 	<script>
 		document.querySelector('form').addEventListener('submit', function(e) {
 			e.preventDefault();
-			const type = document.querySelector('input[name="type"]').value;
+			const type = document.querySelector('select[name="type"]').value;
 			const payload = document.querySelector('textarea[name="payload"]').value;
 			fetch('/jobs/create', {
 				method: 'POST',

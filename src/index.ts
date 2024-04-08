@@ -14,15 +14,19 @@ export type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.get('/jobs', async (c) => {
-	return c.json(await c.env.MAKI.list());
+	using list = await c.env.MAKI.list();
+	return c.json(list);
 });
 
 app.get('/jobs/new', async (c) => {
-	return c.html(newHTML);
+	using available = await c.env.MAKI.availableTypes();
+	const options = available.map((type) => `<option value="${type}">${type}</option>`).join('');
+	return c.html(newHTML.replace('#__options', options));
 });
 
 const makeSchema = (env: Bindings) =>
 	z.object({
+		// FIXME: rename column to binding(?)
 		type: z.string(),
 		payload: z.string(),
 	});

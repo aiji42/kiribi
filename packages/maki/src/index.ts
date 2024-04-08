@@ -41,6 +41,12 @@ class Maki extends WorkerEntrypoint<Bindings> {
 		});
 	}
 
+	availableTypes() {
+		return Object.entries(this.env)
+			.filter(([name, bindings]) => 'perform' in bindings)
+			.map(([name, bindings]) => name);
+	}
+
 	// Delete all jobs that are older than 7 days and have a status of completed or failed
 	async sweep() {
 		return this.prisma.job.deleteMany({
@@ -74,7 +80,7 @@ class Maki extends WorkerEntrypoint<Bindings> {
 				try {
 					console.log('Processing job', msg.body.id);
 					// @ts-ignore
-					const service = this.env[msg.body.type];
+					const service = this.env[msg.body.type] as Service<any>;
 					const result = await service.perform(JSON.parse(msg.body.payload));
 
 					const completedAt = new Date();
@@ -84,6 +90,8 @@ class Maki extends WorkerEntrypoint<Bindings> {
 					data.processingTime = completedAt.getTime() - startedAt.getTime();
 					// FIXME: do not overwrite result if it is already set
 					data.result = JSON.stringify(result);
+
+					result[Symbol.dispose]();
 
 					console.log('Completed job', msg.body.id);
 					msg.ack();
@@ -120,7 +128,7 @@ class Maki extends WorkerEntrypoint<Bindings> {
 export default Maki;
 
 export abstract class MakiJobWorker<P extends unknown = any, R extends unknown = any> extends WorkerEntrypoint {
-	fetch(request: Request): Response | Promise<Response> {
+	fetch() {
 		return new Response('This is Maki Job Worker');
 	}
 
