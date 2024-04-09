@@ -7,9 +7,9 @@
 <body>
 	<form action="/jobs/create">
 		<dl>
-			<dt><label for="type">Job type</label></dt>
+			<dt><label for="binding">Binding</label></dt>
 			<dd>
-        <select id="type" type="text" name="type">
+        <select id="binding" type="text" name="binding">
           #__options
         </select>
 			</dd>
@@ -23,14 +23,14 @@
 	<script>
 		document.querySelector('form').addEventListener('submit', function(e) {
 			e.preventDefault();
-			const type = document.querySelector('select[name="type"]').value;
+			const binding = document.querySelector('select[name="binding"]').value;
 			const payload = document.querySelector('textarea[name="payload"]').value;
 			fetch('/jobs/create', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ type, payload })
+				body: JSON.stringify({ binding, payload })
 			})
 		});
 	</script>

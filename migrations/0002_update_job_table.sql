@@ -1,2 +1,4 @@
--- Add a new column to the Job table
-ALTER TABLE "Job" ADD COLUMN "retriedCount" INTEGER NOT NULL DEFAULT 0;
+-- Rename column name from "retriedCount" to "attempts" on the Job table
+ALTER TABLE "Job" RENAME COLUMN "retriedCount" TO "attempts";
+-- Rename column name from "type" to "binding" on the Job table
+ALTER TABLE "Job" RENAME COLUMN "type" TO "binding";

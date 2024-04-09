@@ -8,6 +8,7 @@ const jobStatus = {
 	retryPending: 'RETRY_PENDING',
 	completed: 'COMPLETED',
 	failed: 'FAILED',
+	cancelled: 'CANCELLED',
 };
 
 type Status = (typeof jobStatus)[keyof typeof jobStatus];
@@ -23,25 +24,43 @@ class Maki extends WorkerEntrypoint<Bindings> {
 		this.prisma = new PrismaClient({ adapter });
 	}
 
-	async enqueue<T extends unknown>(type: string, payload: T) {
-		console.log('Enqueuing a job', type);
+	async enqueue<T extends unknown>(binding: string, payload: T) {
+		console.log('Enqueuing a job', binding);
 		const res = await this.prisma.job.create({
-			data: { type, payload: JSON.stringify(payload) },
+			data: { binding, payload: JSON.stringify(payload) },
 		});
 		return this.env.MAKI_QUEUE.send(res);
 	}
 
-	async list(filter?: { type?: string | string[]; status?: Status | Status[] }) {
-		return this.prisma.job.findMany({
+	async list({
+		filter,
+		sort,
+		page,
+	}: {
+		filter?: { binding?: string | string[]; status?: Status | Status[] };
+		sort?: { key: string; desc: boolean };
+		page?: { index: number; size: number };
+	} = {}) {
+		const count = this.prisma.job.count({
 			where: {
-				type: filter?.type ? { in: Array.isArray(filter.type) ? filter.type : [filter.type] } : undefined,
+				binding: filter?.binding ? { in: Array.isArray(filter.binding) ? filter.binding : [filter.binding] } : undefined,
 				status: filter?.status ? { in: Array.isArray(filter.status) ? filter.status : [filter.status] } : undefined,
 			},
-			orderBy: { createdAt: 'desc' },
 		});
+		const rows = this.prisma.job.findMany({
+			where: {
+				binding: filter?.binding ? { in: Array.isArray(filter.binding) ? filter.binding : [filter.binding] } : undefined,
+				status: filter?.status ? { in: Array.isArray(filter.status) ? filter.status : [filter.status] } : undefined,
+			},
+			orderBy: [sort ? { [sort.key]: sort.desc ? 'desc' : 'asc' } : { id: 'desc' }, { id: 'desc' }],
+			skip: page ? page.index * page.size : undefined,
+			take: page ? page.size : 100,
+		});
+
+		return { results: await rows, totalCount: await count };
 	}
 
-	availableTypes() {
+	availableBindings() {
 		return Object.entries(this.env)
 			.filter(([name, bindings]) => 'perform' in bindings)
 			.map(([name, bindings]) => name);
@@ -70,8 +89,7 @@ class Maki extends WorkerEntrypoint<Bindings> {
 					data: {
 						status: jobStatus.processing,
 						startedAt,
-						// FIXME: rename column to attempts
-						retriedCount: msg.attempts,
+						attempts: msg.attempts,
 					},
 				});
 
@@ -80,7 +98,7 @@ class Maki extends WorkerEntrypoint<Bindings> {
 				try {
 					console.log('Processing job', msg.body.id);
 					// @ts-ignore
-					const service = this.env[msg.body.type] as Service<any>;
+					const service = this.env[msg.body.binding] as Service<any>;
 					const result = await service.perform(JSON.parse(msg.body.payload));
 
 					const completedAt = new Date();

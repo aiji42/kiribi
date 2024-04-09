@@ -6,6 +6,7 @@ main = "src/worker.ts"
 binding = "MAKI_DB" # i.e. available in your Worker on env.DB
 database_name = "job-controller"
 database_id = "40855cf6-27e1-4853-81f5-e55d07ae4982"
+migrations_dir = '../../migrations'
 
 [[queues.producers]]
 binding = "MAKI_QUEUE"

@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { z } from 'zod';
 import { validator } from 'hono/validator';
 // @ts-ignore
@@ -13,21 +14,27 @@ export type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
+app.use(cors());
+
 app.get('/jobs', async (c) => {
 	using list = await c.env.MAKI.list();
 	return c.json(list);
 });
 
+app.post('/jobs', async (c) => {
+	using list = await c.env.MAKI.list(await c.req.json());
+	return c.json(list);
+});
+
 app.get('/jobs/new', async (c) => {
-	using available = await c.env.MAKI.availableTypes();
-	const options = available.map((type) => `<option value="${type}">${type}</option>`).join('');
+	using available = await c.env.MAKI.availableBindings();
+	const options = available.map((name) => `<option value="${name}">${name}</option>`).join('');
 	return c.html(newHTML.replace('#__options', options));
 });
 
 const makeSchema = (env: Bindings) =>
 	z.object({
-		// FIXME: rename column to binding(?)
-		type: z.string(),
+		binding: z.string(),
 		payload: z.string(),
 	});
 
@@ -40,8 +47,8 @@ app.post(
 		return parsed.data;
 	}),
 	async (c) => {
-		const { type, payload } = c.req.valid('json');
-		await c.env.MAKI.enqueue(type, JSON.parse(payload));
+		const { binding, payload } = c.req.valid('json');
+		await c.env.MAKI.enqueue(binding, JSON.parse(payload));
 
 		return c.text('OK');
 	},

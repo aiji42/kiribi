@@ -2,12 +2,12 @@
 
 ```bash
 # local
-npx wrangler d1 migrations apply job-controller --local
+npx wrangler d1 migrations apply job-controller --local -c packages/maki/wrangler.toml
 ```
 
 ```bash
 # remote
-npx wrangler d1 migrations apply job-controller --remote
+npx wrangler d1 migrations apply job-controller --remote -c packages/maki/wrangler.toml
 ```
 
 ## Create Migration File
