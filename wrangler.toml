@@ -8,6 +8,9 @@ binding = "MAKI"
 service = "maki-dev"
 entirypoint = "Maki"
 
+# [site]
+# bucket = "./packages/client/dist"
+
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
 # Note: Use secrets to store sensitive data.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables

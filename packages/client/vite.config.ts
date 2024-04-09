@@ -10,4 +10,11 @@ export default defineConfig({
 			'@': path.resolve(__dirname, './src'),
 		},
 	},
+	server: {
+		proxy: {
+			'/jobs': 'http://localhost:9000',
+			'/jobs/create': 'http://localhost:9000',
+			'/bindings': 'http://localhost:9000',
+		},
+	},
 });

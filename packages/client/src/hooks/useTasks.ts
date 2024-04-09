@@ -1,17 +1,18 @@
 import { ColumnFiltersState, PaginationState, SortingState } from '@tanstack/react-table';
 import useSWR from 'swr';
+import useSWRMutation from 'swr/mutation';
 
-type Args = {
+export type UseTasksArgs = {
 	sorting: SortingState;
 	columnFilters: ColumnFiltersState;
 	pagination: PaginationState;
 };
 
-export const useTasks = (key: Args) => {
+export const useTasks = (key: UseTasksArgs) => {
 	const { data, isLoading } = useSWR(
 		key,
 		async ({ sorting, pagination, columnFilters }) => {
-			const res = await fetch('http://localhost:9000/jobs', {
+			const res = await fetch('/jobs', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -37,5 +38,22 @@ export const useTasks = (key: Args) => {
 		},
 	);
 
-	return { data, isLoading };
+	const {
+		data: createCompleted,
+		isMutating: isCreating,
+		trigger: create,
+		error: createError,
+	} = useSWRMutation(key, async (_, { arg }: { arg: { binding: string; payload: string } }) => {
+		const res = await fetch('/jobs/create', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(arg),
+		});
+		if (res.ok) return true;
+		throw new Error(await res.text());
+	});
+
+	return { data, isLoading, create, createCompleted, isCreating, createError };
 };

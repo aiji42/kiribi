@@ -6,6 +6,7 @@ import { DataTableViewOptions } from './data-table-view-options';
 
 import { statuses } from '../data/data';
 import { DataTableFacetedFilter } from './data-table-faceted-filter';
+import { NewTaskDialog } from '@/components/NewTaskDialog';
 
 interface DataTableToolbarProps<TData> {
 	table: Table<TData>;
@@ -28,7 +29,10 @@ export function DataTableToolbar<TData>({ table }: DataTableToolbarProps<TData>)
 					</Button>
 				)}
 			</div>
-			<DataTableViewOptions table={table} />
+			<div className="flex flex-1 items-center space-x-2">
+				<DataTableViewOptions table={table} />
+				<NewTaskDialog table={table} />
+			</div>
 		</div>
 	);
 }

@@ -1,9 +1,6 @@
 import { Hono } from 'hono';
-import { cors } from 'hono/cors';
 import { z } from 'zod';
 import { validator } from 'hono/validator';
-// @ts-ignore
-import newHTML from './new.html';
 import type Maki from '../packages/maki/src/worker.js';
 
 export type Bindings = {
@@ -14,22 +11,14 @@ export type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-app.use(cors());
-
-app.get('/jobs', async (c) => {
-	using list = await c.env.MAKI.list();
-	return c.json(list);
-});
-
 app.post('/jobs', async (c) => {
 	using list = await c.env.MAKI.list(await c.req.json());
 	return c.json(list);
 });
 
-app.get('/jobs/new', async (c) => {
+app.get('/bindings', async (c) => {
 	using available = await c.env.MAKI.availableBindings();
-	const options = available.map((name) => `<option value="${name}">${name}</option>`).join('');
-	return c.html(newHTML.replace('#__options', options));
+	return c.json(available);
 });
 
 const makeSchema = (env: Bindings) =>
@@ -53,5 +42,9 @@ app.post(
 		return c.text('OK');
 	},
 );
+
+// import { serveStatic } from 'hono/cloudflare-workers';
+// import manifest from '__STATIC_CONTENT_MANIFEST';
+// app.get('*', serveStatic({ root: './', manifest }));
 
 export default app;
