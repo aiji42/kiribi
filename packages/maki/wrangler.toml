@@ -18,6 +18,7 @@ queue = "job-controller"
 # If you misspell the name, you will receive an error when attempting to publish your Worker.
 max_batch_size = 10 # optional: defaults to 10
 max_batch_timeout = 5 # optional: defaults to 5 seconds
+max_retries = 5
 
 [[services]]
 binding = "EXAMPLE_TASK_1"

@@ -12,12 +12,12 @@ export type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.post('/jobs', async (c) => {
-	using list = await c.env.MAKI.list(await c.req.json());
+	const list = await c.env.MAKI.list(await c.req.json());
 	return c.json(list);
 });
 
 app.get('/bindings', async (c) => {
-	using available = await c.env.MAKI.availableBindings();
+	const available = await c.env.MAKI.availableBindings();
 	return c.json(available);
 });
 
@@ -25,6 +25,13 @@ const makeSchema = (env: Bindings) =>
 	z.object({
 		binding: z.string(),
 		payload: z.string(),
+		params: z
+			.object({
+				maxRetries: z.number().optional(),
+				retryDelay: z.number().optional(),
+				exponential: z.boolean().optional(),
+			})
+			.optional(),
 	});
 
 app.post(
@@ -36,8 +43,11 @@ app.post(
 		return parsed.data;
 	}),
 	async (c) => {
-		const { binding, payload } = c.req.valid('json');
-		await c.env.MAKI.enqueue(binding, JSON.parse(payload));
+		const { binding, payload, params } = c.req.valid('json');
+		await c.env.MAKI.enqueue(binding, JSON.parse(payload), {
+			maxRetries: params?.maxRetries,
+			retryDelay: params?.exponential ? { exponential: true, base: params.retryDelay ?? 2 } : params?.retryDelay,
+		});
 
 		return c.text('OK');
 	},

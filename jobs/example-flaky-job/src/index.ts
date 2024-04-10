@@ -8,7 +8,5 @@ export default class extends MakiJobWorker {
 		await new Promise((resolve) => setTimeout(resolve, delay));
 
 		if (Math.random() > chance) throw new Error('Failed to perform job');
-
-		return { result: 'OK' };
 	}
 }

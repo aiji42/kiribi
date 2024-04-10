@@ -20,6 +20,7 @@ model Job {
   status         String    @default("PENDING") // PENDING, PROCESSING, RETRY_PENDING, COMPLETED, FAILED, CANCELLED
   attempts       Int       @default(0)
   payload        String
+  params         String?
   result         String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt

@@ -43,17 +43,24 @@ export const useTasks = (key: UseTasksArgs) => {
 		isMutating: isCreating,
 		trigger: create,
 		error: createError,
-	} = useSWRMutation(key, async (_, { arg }: { arg: { binding: string; payload: string } }) => {
-		const res = await fetch('/jobs/create', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(arg),
-		});
-		if (res.ok) return true;
-		throw new Error(await res.text());
-	});
+		reset: createStatusReset,
+	} = useSWRMutation(
+		key,
+		async (
+			_,
+			{ arg }: { arg: { binding: string; payload: string; params?: { maxRetries?: number; retryDelay?: number; exponential?: boolean } } },
+		) => {
+			const res = await fetch('/jobs/create', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(arg),
+			});
+			if (res.ok) return true;
+			throw new Error(await res.text());
+		},
+	);
 
-	return { data, isLoading, create, createCompleted, isCreating, createError };
+	return { data, isLoading, create, createCompleted, isCreating, createError, createStatusReset };
 };
