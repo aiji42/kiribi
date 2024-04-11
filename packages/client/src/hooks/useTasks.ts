@@ -34,7 +34,7 @@ export const useTasks = (key: UseTasksArgs) => {
 		{
 			keepPreviousData: true,
 			fallbackData: { results: [], totalCount: 0 },
-			refreshInterval: 1000,
+			refreshInterval: 3000,
 		},
 	);
 

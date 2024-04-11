@@ -49,13 +49,13 @@ class Maki extends WorkerEntrypoint<Bindings> {
 		sort?: { key: string; desc: boolean };
 		page?: { index: number; size: number };
 	} = {}) {
-		const count = await this.prisma.job.count({
+		const count = this.prisma.job.count({
 			where: {
 				binding: filter?.binding ? { in: Array.isArray(filter.binding) ? filter.binding : [filter.binding] } : undefined,
 				status: filter?.status ? { in: Array.isArray(filter.status) ? filter.status : [filter.status] } : undefined,
 			},
 		});
-		const rows = await this.prisma.job.findMany({
+		const rows = this.prisma.job.findMany({
 			where: {
 				binding: filter?.binding ? { in: Array.isArray(filter.binding) ? filter.binding : [filter.binding] } : undefined,
 				status: filter?.status ? { in: Array.isArray(filter.status) ? filter.status : [filter.status] } : undefined,
@@ -65,7 +65,7 @@ class Maki extends WorkerEntrypoint<Bindings> {
 			take: page ? page.size : 100,
 		});
 
-		return { results: rows, totalCount: count };
+		return { results: await rows, totalCount: await count };
 	}
 
 	availableBindings() {

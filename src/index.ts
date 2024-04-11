@@ -12,13 +12,13 @@ export type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.post('/jobs', async (c) => {
-	const list = await c.env.MAKI.list(await c.req.json());
+	const params = await c.req.json();
+	using list = await c.env.MAKI.list(params);
 	return c.json(list);
 });
 
 app.get('/bindings', async (c) => {
-	const available = await c.env.MAKI.availableBindings();
-	return c.json(available);
+	return c.json(await c.env.MAKI.availableBindings());
 });
 
 const makeSchema = (env: Bindings) =>

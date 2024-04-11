@@ -55,7 +55,7 @@ const initialState: Values = {
 
 export function NewTaskDialog<TData>({ table }: { table: Table<TData> }) {
 	const [open, setOpen] = useState(false);
-	const { data } = useAvailableBindings();
+	const { data } = useAvailableBindings(open);
 	const [values, dispatch] = useReducer((s: Values, a: Action) => {
 		switch (a.type) {
 			case 'binding':
