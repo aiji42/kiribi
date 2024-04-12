@@ -21,3 +21,11 @@ max_retries = 5
 [[services]]
 binding = "EXAMPLE_TASK_1"
 service = "example-flaky-job"
+
+[[services]]
+binding = "MAKI"
+service = "maki-dev"
+entrypoint = "Maki"
+
+[site]
+bucket = "../client/dist"

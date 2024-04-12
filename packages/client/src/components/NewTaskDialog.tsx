@@ -173,8 +173,12 @@ export function NewTaskDialog<TData>({ table }: { table: Table<TData> }) {
 								payload: values.payload,
 								params: {
 									maxRetries: values.maxRetries,
-									retryDelay: values.retryDelay,
-									exponential: values.exponential,
+									retryDelay: values.exponential
+										? {
+												exponential: true,
+												base: values.retryDelay,
+											}
+										: values.retryDelay,
 								},
 							});
 						}}

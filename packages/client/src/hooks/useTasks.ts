@@ -12,7 +12,7 @@ export const useTasks = (key: UseTasksArgs) => {
 	const { data, isLoading } = useSWR(
 		key,
 		async ({ sorting, pagination, columnFilters }) => {
-			const res = await fetch('/jobs', {
+			const res = await fetch('/api/jobs', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -48,9 +48,17 @@ export const useTasks = (key: UseTasksArgs) => {
 		key,
 		async (
 			_,
-			{ arg }: { arg: { binding: string; payload: string; params?: { maxRetries?: number; retryDelay?: number; exponential?: boolean } } },
+			{
+				arg,
+			}: {
+				arg: {
+					binding: string;
+					payload: string;
+					params?: { maxRetries?: number; retryDelay?: number | { exponential: true; base: number } };
+				};
+			},
 		) => {
-			const res = await fetch('/jobs/create', {
+			const res = await fetch('/api/jobs/create', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

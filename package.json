@@ -3,16 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "deploy": "yarn run deploy:example-flaky-job && yarn run deploy:maki && yarn run deploy:main",
-    "deploy:main": "npx wrangler deploy",
+    "deploy": "yarn run deploy:example-flaky-job && yarn run deploy:maki",
     "deploy:maki": "npx wrangler deploy -c ./packages/maki/wrangler.toml",
     "deploy:example-flaky-job": "npx wrangler deploy -c ./jobs/example-flaky-job/wrangler.toml",
-    "dev": "npx concurrently -n example-flaky-job,maki,main -k \"yarn run dev:example-flaky-job\" \"sleep 2 && yarn run dev:maki\" \"sleep 4 && yarn run dev:main\"",
-    "dev:main": "npx wrangler dev --port 9000",
+    "dev": "npx concurrently -n example-flaky-job,maki -k \"yarn run dev:example-flaky-job\" \"sleep 2 && yarn run dev:maki\"",
     "dev:maki": "npx wrangler dev -c ./packages/maki/wrangler.toml --port 9001",
     "dev:example-flaky-job": "npx wrangler dev -c ./jobs/example-flaky-job/wrangler.toml --port 9002",
-    "tail": "npx concurrently -n example-flaky-job,maki,main -k \"yarn run tail:example-flaky-job\" \"yarn run tail:maki\" \"yarn run tail:main\"",
-    "tail:main": "npx wrangler tail",
+    "tail": "npx concurrently -n example-flaky-job,maki -k \"yarn run tail:example-flaky-job\" \"yarn run tail:maki\"",
     "tail:maki": "npx wrangler tail -c ./packages/maki/wrangler.toml",
     "tail:example-flaky-job": "npx wrangler tail -c ./jobs/example-flaky-job/wrangler.toml",
     "start": "wrangler dev",
@@ -28,6 +25,7 @@
     "wrangler": "^0.0.0-d27c287a"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.2.1",
     "@prisma/adapter-d1": "^5.12.1",
     "@prisma/client": "5.12.1",
     "hono": "^4.2.2",

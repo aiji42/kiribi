@@ -12,9 +12,7 @@ export default defineConfig({
 	},
 	server: {
 		proxy: {
-			'/jobs': 'http://localhost:9000',
-			'/jobs/create': 'http://localhost:9000',
-			'/bindings': 'http://localhost:9000',
+			'/api': 'http://localhost:9001',
 		},
 	},
 });

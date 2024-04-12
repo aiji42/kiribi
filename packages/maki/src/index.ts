@@ -11,9 +11,7 @@ const jobStatus = {
 	cancelled: 'CANCELLED',
 };
 
-type Status = (typeof jobStatus)[keyof typeof jobStatus];
-
-type Bindings = { MAKI_DB: D1Database; MAKI_QUEUE: Queue };
+type Bindings = { MAKI_DB: D1Database; MAKI_QUEUE: Queue; MAKI: Service<Maki> };
 
 type Result = { status: 'success' | 'failed'; error: string | null; startedAt: number; finishedAt: number; processingTime: number };
 
@@ -40,40 +38,6 @@ class Maki extends WorkerEntrypoint<Bindings> {
 		return this.env.MAKI_QUEUE.send(res, { delaySeconds: params?.firstDelay });
 	}
 
-	async list({
-		filter,
-		sort,
-		page,
-	}: {
-		filter?: { binding?: string | string[]; status?: Status | Status[] };
-		sort?: { key: string; desc: boolean };
-		page?: { index: number; size: number };
-	} = {}) {
-		const count = this.prisma.job.count({
-			where: {
-				binding: filter?.binding ? { in: Array.isArray(filter.binding) ? filter.binding : [filter.binding] } : undefined,
-				status: filter?.status ? { in: Array.isArray(filter.status) ? filter.status : [filter.status] } : undefined,
-			},
-		});
-		const rows = this.prisma.job.findMany({
-			where: {
-				binding: filter?.binding ? { in: Array.isArray(filter.binding) ? filter.binding : [filter.binding] } : undefined,
-				status: filter?.status ? { in: Array.isArray(filter.status) ? filter.status : [filter.status] } : undefined,
-			},
-			orderBy: [sort ? { [sort.key]: sort.desc ? 'desc' : 'asc' } : { id: 'desc' }, { id: 'desc' }],
-			skip: page ? page.index * page.size : undefined,
-			take: page ? page.size : 100,
-		});
-
-		return { results: await rows, totalCount: await count };
-	}
-
-	availableBindings() {
-		return Object.entries(this.env)
-			.filter(([name, bindings]) => 'perform' in bindings)
-			.map(([name, bindings]) => name);
-	}
-
 	// Delete all jobs that are older than 7 days and have a status of completed or failed
 	async sweep() {
 		return this.prisma.job.deleteMany({
@@ -84,7 +48,7 @@ class Maki extends WorkerEntrypoint<Bindings> {
 		});
 	}
 
-	async fetch() {
+	async fetch(_: Request) {
 		return new Response('This is Maki');
 	}
 
@@ -175,6 +139,9 @@ export default Maki;
 export abstract class MakiJobWorker<P extends unknown = any> extends WorkerEntrypoint {
 	fetch() {
 		return new Response('This is Maki Job Worker');
+	}
+	isJobWorker() {
+		return true;
 	}
 
 	abstract perform(payload: P): void | Promise<void>;
