@@ -1,6 +1,6 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 import { PrismaD1 } from '@prisma/adapter-d1';
-import { Job, PrismaClient, Prisma } from '@prisma/client';
+import { Job, PrismaClient, Prisma } from './.prisma';
 
 const jobStatus = {
 	pending: 'PENDING',

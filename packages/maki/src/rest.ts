@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { PrismaD1 } from '@prisma/adapter-d1';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './.prisma';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import Maki from './index';
