@@ -1,19 +1,19 @@
-name = "maki-dev"
+name = "kiribi-dev"
 compatibility_date = "2024-04-03"
 main = "src/worker.ts"
 
 [[d1_databases]]
-binding = "MAKI_DB" # i.e. available in your Worker on env.DB
-database_name = "job-controller"
+binding = "KIRIBI_DB" # i.e. available in your Worker on env.DB
+database_name = "kiribi-db"
 database_id = "40855cf6-27e1-4853-81f5-e55d07ae4982"
 migrations_dir = '../../migrations'
 
 [[queues.producers]]
-binding = "MAKI_QUEUE"
-queue = "job-controller"
+binding = "KIRIBI_QUEUE"
+queue = "kiribi-queue"
 
 [[queues.consumers]]
-queue = "job-controller"
+queue = "kiribi-queue"
 max_batch_size = 10 # optional: defaults to 10
 max_batch_timeout = 5 # optional: defaults to 5 seconds
 max_retries = 5
@@ -23,9 +23,9 @@ binding = "EXAMPLE_TASK_1"
 service = "example-flaky-job"
 
 [[services]]
-binding = "MAKI"
-service = "maki-dev"
-entrypoint = "Maki"
+binding = "KIRIBI"
+service = "kiribi-dev"
+entrypoint = "Kiribi"
 
 [site]
 bucket = "../client/dist"

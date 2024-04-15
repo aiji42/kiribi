@@ -3,7 +3,7 @@ import { DataTableColumnHeader } from './data-table-column-header';
 import { DataTableRowActions } from './data-table-row-actions';
 import { statuses } from '@/data/data';
 import { cn } from '@/lib/utils';
-import { Job } from '@prisma/client';
+import { Job } from '../../../kiribi/src/.prisma';
 
 const DateTime = ({ value }: { value: string | null | undefined }) => {
 	return (

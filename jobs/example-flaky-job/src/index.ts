@@ -1,6 +1,6 @@
-import { MakiJobWorker } from '../../../packages/maki/src';
+import { KiribiJobWorker } from '../../../packages/kiribi/src';
 
-export default class extends MakiJobWorker {
+export default class extends KiribiJobWorker {
 	async perform(payload: { delay: number; chance: number }) {
 		console.log('Performing job', payload);
 		const { delay, chance } = payload;

@@ -11,7 +11,7 @@ const jobStatus = {
 	cancelled: 'CANCELLED',
 };
 
-type Bindings = { MAKI_DB: D1Database; MAKI_QUEUE: Queue; MAKI: Service<Maki> };
+type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue };
 
 type Result = { status: 'success' | 'failed'; error: string | null; startedAt: number; finishedAt: number; processingTime: number };
 
@@ -21,12 +21,12 @@ type Params = {
 	firstDelay?: number;
 };
 
-class Maki extends WorkerEntrypoint<Bindings> {
+class Kiribi extends WorkerEntrypoint<Bindings> {
 	private prisma: PrismaClient<{ adapter: PrismaD1 }>;
 
 	constructor(ctx: ExecutionContext, env: Bindings) {
 		super(ctx, env);
-		const adapter = new PrismaD1(env.MAKI_DB);
+		const adapter = new PrismaD1(env.KIRIBI_DB);
 		this.prisma = new PrismaClient({ adapter });
 	}
 
@@ -35,7 +35,7 @@ class Maki extends WorkerEntrypoint<Bindings> {
 		const res = await this.prisma.job.create({
 			data: { binding, payload: JSON.stringify(payload), params: JSON.stringify(params) },
 		});
-		return this.env.MAKI_QUEUE.send(res, { delaySeconds: params?.firstDelay });
+		return this.env.KIRIBI_QUEUE.send(res, { delaySeconds: params?.firstDelay });
 	}
 
 	// Delete all jobs that are older than 7 days and have a status of completed or failed
@@ -49,7 +49,7 @@ class Maki extends WorkerEntrypoint<Bindings> {
 	}
 
 	async fetch(_: Request) {
-		return new Response('This is Maki');
+		return new Response('This is Kiribi');
 	}
 
 	async queue(batch: MessageBatch<Job>) {
@@ -134,11 +134,11 @@ class Maki extends WorkerEntrypoint<Bindings> {
 	}
 }
 
-export default Maki;
+export default Kiribi;
 
-export abstract class MakiJobWorker<P extends unknown = any> extends WorkerEntrypoint {
+export abstract class KiribiJobWorker<P extends unknown = any> extends WorkerEntrypoint {
 	fetch() {
-		return new Response('This is Maki Job Worker');
+		return new Response('This is Kiribi Job Worker');
 	}
 	isJobWorker() {
 		return true;

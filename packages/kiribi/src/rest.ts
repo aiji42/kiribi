@@ -3,9 +3,9 @@ import { PrismaD1 } from '@prisma/adapter-d1';
 import { PrismaClient } from './.prisma';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import Maki from './index';
+import Kiribi from './index';
 
-type Bindings = { MAKI_DB: D1Database; MAKI_QUEUE: Queue; MAKI: Service<Maki> };
+type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue; KIRIBI: Service<Kiribi> };
 
 const app = new Hono<{ Bindings: Bindings }>().basePath('/api');
 
@@ -35,7 +35,7 @@ app.post(
 		}),
 	),
 	async (c) => {
-		const adapter = new PrismaD1(c.env.MAKI_DB);
+		const adapter = new PrismaD1(c.env.KIRIBI_DB);
 		const prisma = new PrismaClient({ adapter });
 		const { filter, sort, page } = c.req.valid('json');
 
@@ -94,7 +94,7 @@ app.post(
 	),
 	async (c) => {
 		const { binding, payload, params } = c.req.valid('json');
-		await c.env.MAKI.enqueue(binding, JSON.parse(payload), params);
+		await c.env.KIRIBI.enqueue(binding, JSON.parse(payload), params);
 
 		return c.text('OK');
 	},

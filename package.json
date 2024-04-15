@@ -1,16 +1,16 @@
 {
-  "name": "job-controller",
+  "name": "kiribi",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "deploy": "yarn run deploy:example-flaky-job && yarn run deploy:maki",
-    "deploy:maki": "npx wrangler deploy -c ./packages/maki/wrangler.toml",
+    "deploy": "yarn run deploy:example-flaky-job && yarn run deploy:kiribi",
+    "deploy:kiribi": "npx wrangler deploy -c packages/kiribi/wrangler.toml",
     "deploy:example-flaky-job": "npx wrangler deploy -c ./jobs/example-flaky-job/wrangler.toml",
-    "dev": "npx concurrently -n example-flaky-job,maki -k \"yarn run dev:example-flaky-job\" \"sleep 2 && yarn run dev:maki\"",
-    "dev:maki": "npx wrangler dev -c ./packages/maki/wrangler.toml --port 9001",
+    "dev": "npx concurrently -n example-flaky-job,kiribi -k \"yarn run dev:example-flaky-job\" \"sleep 2 && yarn run dev:kiribi\"",
+    "dev:kiribi": "npx wrangler dev -c packages/kiribi/wrangler.toml --port 9001",
     "dev:example-flaky-job": "npx wrangler dev -c ./jobs/example-flaky-job/wrangler.toml --port 9002",
-    "tail": "npx concurrently -n example-flaky-job,maki -k \"yarn run tail:example-flaky-job\" \"yarn run tail:maki\"",
-    "tail:maki": "npx wrangler tail -c ./packages/maki/wrangler.toml",
+    "tail": "npx concurrently -n example-flaky-job,kiribi -k \"yarn run tail:example-flaky-job\" \"yarn run tail:kiribi\"",
+    "tail:kiribi": "npx wrangler tail -c packages/kiribi/wrangler.toml",
     "tail:example-flaky-job": "npx wrangler tail -c ./jobs/example-flaky-job/wrangler.toml",
     "start": "wrangler dev",
     "test": "vitest"
