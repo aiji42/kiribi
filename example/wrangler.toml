@@ -20,10 +20,18 @@ max_retries = 5
 binding = "KIRIBI"
 service = "example-kiribi"
 
-[[services]]
-binding = "EXAMPLE_TASK_1"
-service = "example-kiribi"
-entrypoint = "ExampleFlakyJob"
-
 [site]
 bucket = "./node_modules/kiribi/client"
+
+# Add queue processing jobs below
+
+[[services]]
+binding = "SLOW_JOB"
+service = "example-kiribi"
+entrypoint = "SlowJob"
+
+[[services]]
+binding = "FLAKY_JOB"
+service = "example-kiribi"
+entrypoint = "FlakyJob"
+
