@@ -51,3 +51,18 @@ export const statuses = [
 		color: 'text-gray-500',
 	},
 ];
+
+export const subStatuses = [
+	{
+		value: 'success',
+		label: 'Success',
+		icon: CheckCircledIcon,
+		color: 'text-green-500',
+	},
+	{
+		value: 'failed',
+		label: 'Failed',
+		icon: CrossCircledIcon,
+		color: 'text-red-500',
+	},
+];

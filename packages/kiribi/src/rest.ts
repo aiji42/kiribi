@@ -54,6 +54,7 @@ app.post(
 				completedAt: true,
 				processingTime: true,
 				attempts: true,
+				result: true,
 			},
 			where: {
 				binding: filter?.binding ? { in: Array.isArray(filter.binding) ? filter.binding : [filter.binding] } : undefined,

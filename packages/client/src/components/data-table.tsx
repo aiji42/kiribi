@@ -7,6 +7,8 @@ import {
 	flexRender,
 	getCoreRowModel,
 	useReactTable,
+	ExpandedState,
+	getExpandedRowModel,
 } from '@tanstack/react-table';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DataTablePagination } from './data-table-pagination';
@@ -26,6 +28,7 @@ export function DataTable() {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+	const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
 	const { data, isLoading } = useTasks({ sorting, pagination, columnFilters });
 
@@ -37,8 +40,14 @@ export function DataTable() {
 			columnVisibility,
 			columnFilters,
 			pagination,
+			expanded,
 		},
 		manualPagination: true,
+		onExpandedChange: setExpanded,
+		getSubRows: (row) => {
+			const results = JSON.parse(row.result ?? '[]');
+			return results.filter((r: { status: string }) => r.status === 'failed');
+		},
 		pageCount: Math.ceil(data?.totalCount / pagination.pageSize),
 		onSortingChange: setSorting,
 		onColumnFiltersChange: (fn) => {
@@ -49,6 +58,7 @@ export function DataTable() {
 		onColumnVisibilityChange: (fn) => setColumnVisibility(fn(columnVisibility)),
 		onPaginationChange: setPagination,
 		getCoreRowModel: getCoreRowModel(),
+		getExpandedRowModel: getExpandedRowModel(),
 	});
 
 	return (
