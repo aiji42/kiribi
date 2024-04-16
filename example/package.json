@@ -1,0 +1,16 @@
+{
+  "name": "example-kiribi",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "kiribi": "link:../"
+  },
+  "devDependencies": {
+    "prisma": "^5.12.1",
+    "wrangler": "^3.50.0",
+    "typescript": "^5.4.5"
+  }
+}

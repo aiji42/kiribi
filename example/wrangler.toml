@@ -1,12 +1,12 @@
-name = "kiribi-dev"
+name = "example-kiribi"
 compatibility_date = "2024-04-03"
-main = "src/worker.ts"
+main = "src/index.ts"
 
 [[d1_databases]]
 binding = "KIRIBI_DB" # i.e. available in your Worker on env.DB
 database_name = "kiribi-db"
 database_id = "40fc2a53-40b6-4a74-b713-d5190e17477f"
-migrations_dir = '../../migrations'
+migrations_dir = './node_modules/kiribi/migrations'
 
 [[queues.producers]]
 binding = "KIRIBI_QUEUE"
@@ -20,11 +20,12 @@ max_retries = 5
 
 [[services]]
 binding = "EXAMPLE_TASK_1"
-service = "example-flaky-job"
+service = "example-kiribi"
+entrypoint = "ExampleFlakyJob"
 
 [[services]]
 binding = "KIRIBI"
-service = "kiribi-dev"
+service = "example-kiribi"
 
 [site]
-bucket = "../client/dist"
+bucket = "./node_modules/kiribi/client/dist"

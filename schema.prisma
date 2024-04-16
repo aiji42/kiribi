@@ -7,7 +7,6 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
-  output          = "../packages/kiribi/src/.prisma"
 }
 
 datasource db {

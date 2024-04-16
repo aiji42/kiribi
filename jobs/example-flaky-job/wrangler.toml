@@ -1,3 +1,0 @@
-name = "example-flaky-job"
-compatibility_date = "2024-04-03"
-main = "src/index.ts"

@@ -2,33 +2,78 @@
   "name": "kiribi",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client.mjs",
+      "require": "./dist/client.cjs",
+      "types": "./dist/client.d.ts"
+    },
+    "./rest": {
+      "import": "./dist/rest.mjs",
+      "require": "./dist/rest.cjs",
+      "types": "./dist/rest.d.ts"
+    },
+    "./job-worker": {
+      "import": "./dist/job-worker.mjs",
+      "require": "./dist/job-worker.cjs",
+      "types": "./dist/job-worker.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "client": [
+        "./dist/client.d.ts"
+      ],
+      "rest": [
+        "./dist/rest.d.ts"
+      ],
+      "job-worker": [
+        "./dist/job-worker.d.ts"
+      ]
+    }
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "client/dist",
+    "migrations",
+    "schema.prisma"
+  ],
   "scripts": {
-    "deploy": "yarn run build:client && yarn run deploy:example-flaky-job && yarn run deploy:kiribi",
-    "deploy:kiribi": "npx wrangler deploy -c packages/kiribi/wrangler.toml",
-    "deploy:example-flaky-job": "npx wrangler deploy -c ./jobs/example-flaky-job/wrangler.toml",
-    "build:client": "cd packages/client && yarn build",
-    "dev": "npx concurrently -n example-flaky-job,kiribi,client -k \"yarn run dev:example-flaky-job\" \"sleep 2 && yarn run dev:kiribi\" \"sleep 4 && yarn dev:client\"",
-    "dev:client": "cd packages/client && yarn dev",
-    "dev:kiribi": "npx wrangler dev -c packages/kiribi/wrangler.toml --port 9001",
-    "dev:example-flaky-job": "npx wrangler dev -c ./jobs/example-flaky-job/wrangler.toml --port 9002",
-    "tail": "npx concurrently -n example-flaky-job,kiribi -k \"yarn run tail:example-flaky-job\" \"yarn run tail:kiribi\"",
-    "tail:kiribi": "npx wrangler tail -c packages/kiribi/wrangler.toml",
-    "tail:example-flaky-job": "npx wrangler tail -c ./jobs/example-flaky-job/wrangler.toml",
-    "start": "wrangler dev",
-    "test": "vitest"
+    "deploy": "yarn run build:client && yarn run deploy:worker",
+    "deploy:worker": "npx wrangler deploy",
+    "build": "yarn run build:client && yarn run build:main",
+    "build:client": "cd client && yarn build",
+    "build:main": "cd client && yarn build",
+    "dev": "npx concurrently -n worker,client -k \"yarn run dev:worker\" \"sleep 2 && yarn dev:client\"",
+    "dev:client": "cd client && yarn dev",
+    "dev:worker": "npx wrangler dev --port 9001",
+    "tail": "npx wrangler tail",
+    "postinstall": "prisma generate"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240405.0",
     "prettier": "^3.2.5",
     "prisma": "^5.12.1",
-    "typescript": "^5.0.4",
+    "typescript": "^5.4.5",
+    "unbuild": "^2.0.0",
     "wrangler": "^0.0.0-d27c287a"
+  },
+  "peerDependencies": {
+    "prisma": "*"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.2.1",
     "@prisma/adapter-d1": "^5.12.1",
-    "@prisma/client": "5.12.1",
-    "hono": "^4.2.2",
+    "@prisma/client": "^5.12.1",
+    "hono": "^4.2.4",
     "zod": "^3.22.4"
   }
 }

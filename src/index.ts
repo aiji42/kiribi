@@ -1,6 +1,6 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 import { PrismaD1 } from '@prisma/adapter-d1';
-import { Job, PrismaClient, Prisma } from './.prisma';
+import { Job, PrismaClient, Prisma } from '@prisma/client';
 import { Hono } from 'hono';
 import { KiribiJobWorker } from './job-worker';
 import { Rest } from './rest';
@@ -19,13 +19,13 @@ type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue } & { [x: string]: 
 
 type Result = { status: 'success' | 'failed'; error: string | null; startedAt: number; finishedAt: number; processingTime: number };
 
-type Params = {
+export type Params = {
 	maxRetries?: number;
 	retryDelay?: number | { exponential: boolean; base: number };
 	firstDelay?: number;
 };
 
-class Kiribi extends WorkerEntrypoint<Bindings> {
+export class Kiribi extends WorkerEntrypoint<Bindings> {
 	private prisma: PrismaClient<{ adapter: PrismaD1 }>;
 	public client: Client | null = null;
 	public rest: Rest | null = null;
