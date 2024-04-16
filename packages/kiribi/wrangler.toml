@@ -5,7 +5,7 @@ main = "src/worker.ts"
 [[d1_databases]]
 binding = "KIRIBI_DB" # i.e. available in your Worker on env.DB
 database_name = "kiribi-db"
-database_id = "40855cf6-27e1-4853-81f5-e55d07ae4982"
+database_id = "40fc2a53-40b6-4a74-b713-d5190e17477f"
 migrations_dir = '../../migrations'
 
 [[queues.producers]]

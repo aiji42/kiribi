@@ -1,13 +1,23 @@
+## Initialize
+
+```bash
+npx wrangler queues create kiribi-queue
+```
+
+```bash
+npx wrangler d1 create kiribi-db
+```
+
 ## Apply Migration
 
 ```bash
 # local
-npx wrangler d1 migrations apply job-controller --local -c packages/kiribi/wrangler.toml
+npx wrangler d1 migrations apply kiribi-db --local -c packages/kiribi/wrangler.toml
 ```
 
 ```bash
 # remote
-npx wrangler d1 migrations apply job-controller --remote -c packages/kiribi/wrangler.toml
+npx wrangler d1 migrations apply kiribi-db --remote -c packages/kiribi/wrangler.toml
 ```
 
 ## Create Migration File
