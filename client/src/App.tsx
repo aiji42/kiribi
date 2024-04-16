@@ -7,7 +7,7 @@ function App() {
 				<div className="flex items-center justify-between space-y-2">
 					<div>
 						<h2 className="text-2xl font-bold tracking-tight">🎇 Kiribi</h2>
-						<p className="text-muted-foreground">This is your jobs</p>
+						<p className="text-muted-foreground">A simple job queue manager.</p>
 					</div>
 				</div>
 				<DataTable />

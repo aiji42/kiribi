@@ -2,6 +2,8 @@
   "name": "kiribi",
   "version": "0.0.0-beta-0001",
   "type": "module",
+  "private": true,
+  "license": "MIT",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",

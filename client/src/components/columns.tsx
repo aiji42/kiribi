@@ -135,6 +135,10 @@ export const columns: ColumnDef<Job>[] = [
 	},
 	{
 		id: 'actions',
-		cell: ({ row, table }) => <DataTableRowActions row={row} table={table} />,
+		cell: ({ row, table }) => {
+			console.log(row.depth);
+			if (row.depth) return null;
+			return <DataTableRowActions row={row} table={table} />;
+		},
 	},
 ];
