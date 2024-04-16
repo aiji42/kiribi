@@ -118,7 +118,7 @@ export function NewTaskDialog<TData>({ table }: { table: Table<TData> }) {
 					<div className="grid grid-cols-4 items-center gap-4">
 						<Label htmlFor="payload" className="text-right flex flex-col">
 							Payload
-							<div className="text-xs font-normal text-muted-foreground">(JSON)</div>
+							<small className="text-muted-foreground">(JSON)</small>
 						</Label>
 						<Textarea
 							id="payload"
@@ -134,32 +134,34 @@ export function NewTaskDialog<TData>({ table }: { table: Table<TData> }) {
 						</Label>
 						<Input
 							id="maxRetries"
-							className="col-span-3"
-							type="number"
+							className="col-span-1"
+							type="text"
+							inputMode="numeric"
 							value={values.maxRetries}
 							onChange={(e) => dispatch({ type: 'maxRetries', value: +e.target.value })}
 						/>
 					</div>
 					<div className="grid grid-cols-4 items-center gap-4">
+						<Label htmlFor="retryDelay" className="text-right flex flex-col">
+							Retry Delay
+							<small className="text-muted-foreground">(seconds)</small>
+						</Label>
+						<Input
+							id="retryDelay"
+							className="col-span-1"
+							type="text"
+							inputMode="numeric"
+							value={values.retryDelay}
+							onChange={(e) => dispatch({ type: 'retryDelay', value: +e.target.value })}
+						/>
 						<Label htmlFor="exponential" className="text-right flex flex-col">
 							Exponential
 						</Label>
 						<Checkbox
 							id="exponential"
+							className="col-span-1"
 							checked={values.exponential}
 							onCheckedChange={(v) => dispatch({ type: 'exponential', value: !!v })}
-						/>
-					</div>
-					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="retryDelay" className="text-right flex flex-col">
-							Retry Delay
-						</Label>
-						<Input
-							id="retryDelay"
-							className="col-span-3"
-							type="number"
-							value={values.retryDelay}
-							onChange={(e) => dispatch({ type: 'retryDelay', value: +e.target.value })}
 						/>
 					</div>
 				</div>
