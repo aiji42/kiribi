@@ -1,4 +1,4 @@
-import { KiribiJobWorker } from '../../../packages/kiribi/src';
+import { KiribiJobWorker } from '../../../packages/kiribi/src/job-worker';
 
 export default class extends KiribiJobWorker {
 	async perform(payload: { delay: number; chance: number }) {

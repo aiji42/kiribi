@@ -25,7 +25,6 @@ service = "example-flaky-job"
 [[services]]
 binding = "KIRIBI"
 service = "kiribi-dev"
-entrypoint = "Kiribi"
 
 [site]
 bucket = "../client/dist"
