@@ -3,8 +3,8 @@ import { PrismaD1 } from '@prisma/adapter-d1';
 import { Job, PrismaClient, Prisma } from './.prisma';
 import { Hono } from 'hono';
 import { KiribiJobWorker } from './job-worker';
-import rest from './rest';
-import clientEntry from './client-entry';
+import { Rest } from './rest';
+import { Client } from './client';
 
 const jobStatus = {
 	pending: 'PENDING',
@@ -27,8 +27,8 @@ type Params = {
 
 class Kiribi extends WorkerEntrypoint<Bindings> {
 	private prisma: PrismaClient<{ adapter: PrismaD1 }>;
-	public client = false;
-	public rest = false;
+	public client: Client | null = null;
+	public rest: Rest | null = null;
 
 	constructor(ctx: ExecutionContext, env: Bindings) {
 		super(ctx, env);
@@ -79,8 +79,8 @@ class Kiribi extends WorkerEntrypoint<Bindings> {
 
 	async fetch(res: Request) {
 		const app = new Hono();
-		if (this.client || this.rest) app.route('/', rest);
-		if (this.client) app.route('/', clientEntry);
+		if (this.client) app.route('/', this.client);
+		if (this.rest) app.route('/', this.rest);
 
 		return app.fetch(res, this.env, this.ctx);
 	}

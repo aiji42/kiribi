@@ -143,3 +143,5 @@ app.post(
 );
 
 export default app;
+
+export type Rest = typeof app;
