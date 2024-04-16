@@ -50,10 +50,10 @@
     "deploy": "yarn run build:client && yarn run deploy:worker",
     "deploy:worker": "npx wrangler deploy",
     "build": "yarn run build:client && yarn run build:main",
-    "build:client": "cd client && yarn build",
-    "build:main": "cd client && yarn build",
+    "build:client": "yarn workspace client build",
+    "build:main": "unbuild",
     "dev": "npx concurrently -n worker,client -k \"yarn run dev:worker\" \"sleep 2 && yarn dev:client\"",
-    "dev:client": "cd client && yarn dev",
+    "dev:client": "yarn workspace client dev",
     "dev:worker": "npx wrangler dev --port 9001",
     "tail": "npx wrangler tail",
     "postinstall": "prisma generate"
@@ -75,5 +75,8 @@
     "@prisma/client": "^5.12.1",
     "hono": "^4.2.4",
     "zod": "^3.22.4"
-  }
+  },
+  "workspaces": [
+    "client"
+  ]
 }
