@@ -2,7 +2,7 @@ import { WorkerEntrypoint } from 'cloudflare:workers';
 import { PrismaD1 } from '@prisma/adapter-d1';
 import { Job, PrismaClient, Prisma } from './.prisma';
 
-const jobStatus = {
+export const jobStatus = {
 	pending: 'PENDING',
 	processing: 'PROCESSING',
 	retryPending: 'RETRY_PENDING',
@@ -11,7 +11,7 @@ const jobStatus = {
 	cancelled: 'CANCELLED',
 };
 
-type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue };
+type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue } & { [x: string]: Service<KiribiJobWorker> };
 
 type Result = { status: 'success' | 'failed'; error: string | null; startedAt: number; finishedAt: number; processingTime: number };
 
@@ -38,7 +38,30 @@ class Kiribi extends WorkerEntrypoint<Bindings> {
 		return this.env.KIRIBI_QUEUE.send(res, { delaySeconds: params?.firstDelay });
 	}
 
-	// Delete all jobs that are older than 7 days and have a status of completed or failed
+	async delete(id: string) {
+		await this.prisma.job.delete({ where: { id } });
+	}
+
+	async cancel(id: string) {
+		const target = await this.prisma.job.findUniqueOrThrow({ where: { id } });
+		if (![jobStatus.retryPending, jobStatus.pending].includes(target.status))
+			throw new Error('Cannot cancel a job that is not pending or retry pending');
+
+		await this.prisma.job.update({ where: { id }, data: { status: jobStatus.cancelled } });
+	}
+
+	async find(id: string) {
+		return this.prisma.job.findUniqueOrThrow({ where: { id } });
+	}
+
+	async findMany(...query: Parameters<typeof this.prisma.job.findMany>) {
+		return this.prisma.job.findMany(...query);
+	}
+
+	async count(...query: Parameters<typeof this.prisma.job.count>) {
+		return this.prisma.job.count(...query);
+	}
+
 	async sweep() {
 		return this.prisma.job.deleteMany({
 			where: {
@@ -57,6 +80,18 @@ class Kiribi extends WorkerEntrypoint<Bindings> {
 			batch.messages.map(async (msg) => {
 				const params: Params = JSON.parse(msg.body.params || '{}');
 
+				const target = await this.prisma.job.findUnique({ where: { id: msg.body.id } });
+				if (!target) {
+					console.log('Job not found', msg.body.id);
+					msg.ack();
+					return;
+				}
+				if (![jobStatus.pending, jobStatus.retryPending].includes(target.status)) {
+					console.log('Job is not pending or retry pending', msg.body.id);
+					msg.ack();
+					return;
+				}
+
 				const startedAt = new Date();
 				const job = await this.prisma.job.update({
 					where: { id: msg.body.id },
@@ -73,8 +108,8 @@ class Kiribi extends WorkerEntrypoint<Bindings> {
 
 				try {
 					console.log('Processing job', msg.body.id);
-					// @ts-ignore
-					const service = this.env[msg.body.binding] as Service<any>;
+					const service = this.env[msg.body.binding];
+					if (!service) throw new Error(`Service not found: ${msg.body.binding}`);
 					await service.perform(JSON.parse(msg.body.payload));
 
 					const completedAt = new Date();

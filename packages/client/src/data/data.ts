@@ -1,39 +1,53 @@
-import { CheckCircledIcon, CircleIcon, CrossCircledIcon, Half2Icon, ReloadIcon } from '@radix-ui/react-icons';
+import {
+	CheckCircledIcon,
+	CircleIcon,
+	CrossCircledIcon,
+	ReloadIcon,
+	MinusCircledIcon,
+	CounterClockwiseClockIcon,
+} from '@radix-ui/react-icons';
 
 export const statuses = [
 	{
 		value: 'PENDING',
 		label: 'Pending',
 		icon: CircleIcon,
-		rotate: false,
+		pulse: false,
 		color: 'text-yellow-500',
 	},
 	{
 		value: 'PROCESSING',
 		label: 'Processing',
-		icon: Half2Icon,
-		rotate: true,
+		icon: CounterClockwiseClockIcon,
+		pulse: true,
 		color: 'text-blue-500',
 	},
 	{
 		value: 'RETRY_PENDING',
 		label: 'Retry Pending',
 		icon: ReloadIcon,
-		rotate: false,
+		pulse: false,
 		color: 'text-yellow-500',
 	},
 	{
 		value: 'COMPLETED',
 		label: 'Completed',
 		icon: CheckCircledIcon,
-		rotate: false,
+		pulse: false,
 		color: 'text-green-500',
 	},
 	{
 		value: 'FAILED',
 		label: 'Failed',
 		icon: CrossCircledIcon,
-		rotate: false,
+		pulse: false,
 		color: 'text-red-500',
+	},
+	{
+		value: 'CANCELLED',
+		label: 'Cancelled',
+		icon: MinusCircledIcon,
+		pulse: false,
+		color: 'text-gray-500',
 	},
 ];

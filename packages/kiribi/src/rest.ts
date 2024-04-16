@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
-import { PrismaD1 } from '@prisma/adapter-d1';
-import { PrismaClient } from './.prisma';
+import { HTTPException } from 'hono/http-exception';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import Kiribi from './index';
@@ -35,17 +34,27 @@ app.post(
 		}),
 	),
 	async (c) => {
-		const adapter = new PrismaD1(c.env.KIRIBI_DB);
-		const prisma = new PrismaClient({ adapter });
 		const { filter, sort, page } = c.req.valid('json');
 
-		const count = prisma.job.count({
+		const totalCount = await c.env.KIRIBI.count({
 			where: {
 				binding: filter?.binding ? { in: Array.isArray(filter.binding) ? filter.binding : [filter.binding] } : undefined,
 				status: filter?.status ? { in: Array.isArray(filter.status) ? filter.status : [filter.status] } : undefined,
 			},
 		});
-		const rows = prisma.job.findMany({
+
+		using results = await c.env.KIRIBI.findMany({
+			select: {
+				id: true,
+				binding: true,
+				status: true,
+				createdAt: true,
+				startedAt: true,
+				finishedAt: true,
+				completedAt: true,
+				processingTime: true,
+				attempts: true,
+			},
 			where: {
 				binding: filter?.binding ? { in: Array.isArray(filter.binding) ? filter.binding : [filter.binding] } : undefined,
 				status: filter?.status ? { in: Array.isArray(filter.status) ? filter.status : [filter.status] } : undefined,
@@ -55,9 +64,32 @@ app.post(
 			take: page ? page.size : 100,
 		});
 
-		return c.json({ results: await rows, totalCount: await count });
+		return c.json({ results, totalCount });
 	},
 );
+
+app.get('/jobs/:id', async (c) => {
+	const id = c.req.param('id');
+	using job = await c.env.KIRIBI.find(id);
+
+	if (!job) throw new HTTPException(404, { message: 'Job not found' });
+
+	return c.json(job);
+});
+
+app.delete('/jobs/:id', async (c) => {
+	const id = c.req.param('id');
+	await c.env.KIRIBI.delete(id);
+
+	return c.text('OK');
+});
+
+app.patch('/jobs/:id/cancel', async (c) => {
+	const id = c.req.param('id');
+	await c.env.KIRIBI.cancel(id);
+
+	return c.text('OK');
+});
 
 app.get('/bindings', async (c) => {
 	const bindings = await Promise.all(
@@ -76,18 +108,27 @@ app.get('/bindings', async (c) => {
 	return c.json(bindings.filter(([_, isWorker]) => isWorker).map(([name]) => name));
 });
 
+const jsonParsable = (s: string) => {
+	try {
+		JSON.parse(s);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 app.post(
 	'/jobs/create',
 	zValidator(
 		'json',
 		z.object({
-			binding: z.string(),
-			payload: z.string(),
+			binding: z.string().min(1),
+			payload: z.string().min(1).refine(jsonParsable, { message: 'Invalid JSON' }),
 			params: z
 				.object({
-					maxRetries: z.number().optional(),
-					retryDelay: z.union([z.number(), z.object({ exponential: z.boolean(), base: z.number() })]).optional(),
-					firstDelay: z.number().optional(),
+					maxRetries: z.number().min(1).optional(),
+					retryDelay: z.union([z.number().min(0), z.object({ exponential: z.boolean(), base: z.number().min(2) })]).optional(),
+					firstDelay: z.number().min(0).optional(),
 				})
 				.optional(),
 		}),

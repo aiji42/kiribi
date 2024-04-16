@@ -37,7 +37,7 @@ export const columns: ColumnDef<Job>[] = [
 
 			return (
 				<div className="flex w-[100px] items-center">
-					{status.icon && <status.icon className={cn('mr-2 h-4 w-4', status.rotate && 'animate-spin', status.color)} />}
+					{status.icon && <status.icon className={cn('mr-2 h-4 w-4', status.pulse && 'animate-pulse', status.color)} />}
 					<span>{status.label}</span>
 				</div>
 			);
@@ -101,6 +101,6 @@ export const columns: ColumnDef<Job>[] = [
 	},
 	{
 		id: 'actions',
-		cell: ({ row }) => <DataTableRowActions row={row} />,
+		cell: ({ row, table }) => <DataTableRowActions row={row} table={table} />,
 	},
 ];

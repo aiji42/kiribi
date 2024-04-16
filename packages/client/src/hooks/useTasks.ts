@@ -70,5 +70,45 @@ export const useTasks = (key: UseTasksArgs) => {
 		},
 	);
 
-	return { data, isLoading, create, createCompleted, isCreating, createError, createStatusReset };
+	const {
+		isMutating: isDeleting,
+		trigger: deleteJob,
+		error: deleteError,
+		reset: deleteStatusReset,
+	} = useSWRMutation(key, async (_, { arg }: { arg: string }) => {
+		await fetch(`/api/jobs/${arg}`, {
+			method: 'DELETE',
+		});
+		return true;
+	});
+
+	const {
+		isMutating: isCanceling,
+		trigger: cancel,
+		error: cancelError,
+		reset: cancelStatusReset,
+	} = useSWRMutation(key, async (_, { arg }: { arg: string }) => {
+		await fetch(`/api/jobs/${arg}/cancel`, {
+			method: 'PATCH',
+		});
+		return true;
+	});
+
+	return {
+		data,
+		isLoading,
+		create,
+		createCompleted,
+		isCreating,
+		createError,
+		createStatusReset,
+		isDeleting,
+		deleteJob,
+		deleteError,
+		deleteStatusReset,
+		isCanceling,
+		cancel,
+		cancelError,
+		cancelStatusReset,
+	};
 };
