@@ -1,2 +1,2 @@
-client/
+client/*
 !client/.keep
