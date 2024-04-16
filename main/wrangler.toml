@@ -6,7 +6,6 @@ main = "worker/index.ts"
 binding = "KIRIBI_DB" # i.e. available in your Worker on env.DB
 database_name = "kiribi-db"
 database_id = "40fc2a53-40b6-4a74-b713-d5190e17477f"
-migrations_dir = '../../migrations'
 
 [[queues.producers]]
 binding = "KIRIBI_QUEUE"
@@ -28,4 +27,4 @@ binding = "KIRIBI"
 service = "kiribi-dev"
 
 [site]
-bucket = "./client/dist"
+bucket = "./client"

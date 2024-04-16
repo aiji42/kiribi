@@ -1,83 +1,24 @@
 {
-  "name": "kiribi",
-  "version": "0.0.0-beta-0001",
+  "name": "root",
+  "version": "0.0.0",
   "type": "module",
   "private": true,
   "license": "MIT",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-    },
-    "./client": {
-      "import": "./dist/client.mjs",
-      "require": "./dist/client.cjs",
-      "types": "./dist/client.d.ts"
-    },
-    "./rest": {
-      "import": "./dist/rest.mjs",
-      "require": "./dist/rest.cjs",
-      "types": "./dist/rest.d.ts"
-    },
-    "./job-worker": {
-      "import": "./dist/job-worker.mjs",
-      "require": "./dist/job-worker.cjs",
-      "types": "./dist/job-worker.d.ts"
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "client": [
-        "./dist/client.d.ts"
-      ],
-      "rest": [
-        "./dist/rest.d.ts"
-      ],
-      "job-worker": [
-        "./dist/job-worker.d.ts"
-      ]
-    }
-  },
-  "main": "./dist/index.cjs",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "client/dist",
-    "migrations",
-    "schema.prisma"
-  ],
   "scripts": {
-    "deploy": "yarn run build:client && yarn run deploy:worker",
-    "deploy:worker": "npx wrangler deploy",
+    "deploy:main": "yarn workspace kiribi deploy",
     "build": "yarn run build:client && yarn run build:main",
     "build:client": "yarn workspace client build",
-    "build:main": "unbuild",
-    "dev": "npx concurrently -n worker,client -k \"yarn run dev:worker\" \"sleep 2 && yarn dev:client\"",
+    "build:main": "yarn workspace kiribi build",
+    "dev": "npx concurrently -n worker,client -k \"yarn run dev:main\" \"sleep 2 && yarn dev:client\"",
     "dev:client": "yarn workspace client dev",
-    "dev:worker": "npx wrangler dev --port 9001",
-    "tail": "npx wrangler tail",
-    "postinstall": "prisma generate"
+    "dev:main": "yarn workspace kiribi dev"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240405.0",
     "prettier": "^3.2.5",
-    "prisma": "^5.12.1",
-    "typescript": "^5.4.5",
-    "unbuild": "^2.0.0",
-    "wrangler": "^0.0.0-d27c287a"
-  },
-  "peerDependencies": {
-    "prisma": "*"
-  },
-  "dependencies": {
-    "@hono/zod-validator": "^0.2.1",
-    "@prisma/adapter-d1": "^5.12.1",
-    "@prisma/client": "^5.12.1",
-    "hono": "^4.2.4",
-    "zod": "^3.22.4"
+    "typescript": "^5.4.5"
   },
   "workspaces": [
-    "client"
+    "client",
+    "main"
   ]
 }

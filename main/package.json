@@ -1,0 +1,74 @@
+{
+  "name": "kiribi",
+  "version": "0.0.0-beta-0002",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client.mjs",
+      "require": "./dist/client.cjs",
+      "types": "./dist/client.d.ts"
+    },
+    "./rest": {
+      "import": "./dist/rest.mjs",
+      "require": "./dist/rest.cjs",
+      "types": "./dist/rest.d.ts"
+    },
+    "./job-worker": {
+      "import": "./dist/job-worker.mjs",
+      "require": "./dist/job-worker.cjs",
+      "types": "./dist/job-worker.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "client": [
+        "./dist/client.d.ts"
+      ],
+      "rest": [
+        "./dist/rest.d.ts"
+      ],
+      "job-worker": [
+        "./dist/job-worker.d.ts"
+      ]
+    }
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "client",
+    "migrations",
+    "schema.prisma"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "dev": "npx wrangler dev --port 9001",
+    "tail": "npx wrangler tail",
+    "postinstall": "prisma generate",
+    "prepare:client": "yarn workspace client build && cp -R ../client/dist/* ./client",
+    "prepack": "yarn build && yarn run prepare:client",
+    "deploy": "yarn run prepare:client && npx wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240405.0",
+    "prisma": "^5.12.1",
+    "unbuild": "^2.0.0",
+    "wrangler": "^0.0.0-d27c287a"
+  },
+  "peerDependencies": {
+    "prisma": "*"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.2.1",
+    "@prisma/adapter-d1": "^5.12.1",
+    "@prisma/client": "^5.12.1",
+    "hono": "^4.2.4",
+    "zod": "^3.22.4"
+  }
+}

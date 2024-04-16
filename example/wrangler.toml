@@ -28,4 +28,4 @@ binding = "KIRIBI"
 service = "example-kiribi"
 
 [site]
-bucket = "./node_modules/kiribi/client/dist"
+bucket = "./node_modules/kiribi/client"

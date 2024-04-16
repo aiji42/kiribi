@@ -6,7 +6,7 @@
     "dev": "wrangler dev"
   },
   "dependencies": {
-    "kiribi": "link:../"
+    "kiribi": "link:../main"
   },
   "devDependencies": {
     "prisma": "^5.12.1",

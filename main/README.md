@@ -39,7 +39,7 @@ binding = "KIRIBI" # Be sure to set KIRIBI for the service binding
 service = "your-worker-name"
 
 [site]
-bucket = "./node_modules/kiribi/client/dist" # If you want to deploy the client, please set it
+bucket = "./node_modules/kiribi/client" # If you want to deploy the client, please set it
 ```
 
 Migrate the database:
