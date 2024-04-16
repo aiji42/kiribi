@@ -21,9 +21,8 @@ import { useState } from 'react';
 
 export function DataTable() {
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>('visibilityState', {
+		createdAt: false,
 		completedAt: false,
-		finishedAt: false,
-		startedAt: false,
 	});
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [sorting, setSorting] = useState<SortingState>([]);
