@@ -39,6 +39,11 @@
   resolved "https://registry.yarnpkg.com/@cloudflare/workers-types/-/workers-types-4.20240329.0.tgz#18fd98a2987579ad208b6b9675c4f6411703fff0"
   integrity sha512-AbzgvSQjG8Nci4xxQEcjTTVjiWXgOQnFIbIHtEZXteHiMGDXMWGegjWBo5JHGsZCq+U5V/SD5EnlypQnUQEoig==
 
+"@cloudflare/workers-types@^4.20240405.0":
+  version "4.20240405.0"
+  resolved "https://registry.yarnpkg.com/@cloudflare/workers-types/-/workers-types-4.20240405.0.tgz#6baab25dbae8d9c9be1454f82e29279215b5741f"
+  integrity sha512-sEVOhyOgXUwfLkgHqbLZa/sfkSYrh7/zLmI6EZNibPaVPvAnAcItbNNl3SAlLyLKuwf8m4wAIAgu9meKWCvXjg==
+
 "@cspotcode/source-map-support@0.8.1":
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz#00629c35a688e05a88b1cda684fb9d5e73f000a1"
@@ -528,16 +533,9 @@ json5@^2.2.3:
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.3.tgz#78cd6f1a19bdc12b73db5ad0c61efd66c1e29283"
   integrity sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==
 
-kiribi@0.0.0-beta-0002:
-  version "0.0.0-beta-0002"
-  resolved "https://registry.yarnpkg.com/kiribi/-/kiribi-0.0.0-beta-0002.tgz#3af7b238645654b1bfbc661e28ddbdca51bd61d6"
-  integrity sha512-AyAdc05dMkgCO5M8D5YuI6JWt5KIb1gjo6Zu5+kZYOfpPO6FPzLnZWuqmfHi/70yJhkshANib7dU9ujfmgyCcw==
-  dependencies:
-    "@hono/zod-validator" "^0.2.1"
-    "@prisma/adapter-d1" "^5.12.1"
-    "@prisma/client" "^5.12.1"
-    hono "^4.2.4"
-    zod "^3.22.4"
+"kiribi@link:../main":
+  version "0.0.0"
+  uid ""
 
 magic-string@^0.25.3:
   version "0.25.9"

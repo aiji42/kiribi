@@ -2,8 +2,11 @@ name = "kiribi-dev"
 compatibility_date = "2024-04-03"
 main = "worker/index.ts"
 
+[site]
+bucket = "./client"
+
 [[d1_databases]]
-binding = "KIRIBI_DB" # i.e. available in your Worker on env.DB
+binding = "KIRIBI_DB"
 database_name = "kiribi-db"
 database_id = "40fc2a53-40b6-4a74-b713-d5190e17477f"
 
@@ -13,18 +16,18 @@ queue = "kiribi-queue"
 
 [[queues.consumers]]
 queue = "kiribi-queue"
-max_batch_size = 10 # optional: defaults to 10
-max_batch_timeout = 5 # optional: defaults to 5 seconds
 max_retries = 5
-
-[[services]]
-binding = "EXAMPLE_TASK_1"
-service = "kiribi-dev"
-entrypoint = "ExampleFlakyJob"
 
 [[services]]
 binding = "KIRIBI"
 service = "kiribi-dev"
 
-[site]
-bucket = "./client"
+[[services]]
+binding = "SLOW_JOB"
+service = "kiribi-dev"
+entrypoint = "SlowJob"
+
+[[services]]
+binding = "FLAKY_JOB"
+service = "kiribi-dev"
+entrypoint = "FlakyJob"
