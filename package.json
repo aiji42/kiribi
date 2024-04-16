@@ -9,7 +9,7 @@
     "build": "yarn run build:client && yarn run build:main",
     "build:client": "yarn workspace client build",
     "build:main": "yarn workspace kiribi build",
-    "dev": "npx concurrently -n worker,client -k \"yarn run dev:main\" \"sleep 2 && yarn dev:client\"",
+    "dev": "npx concurrently -n worker,client -k \"yarn run dev:main\" \"yarn dev:client\"",
     "dev:client": "yarn workspace client dev",
     "dev:main": "yarn workspace kiribi dev"
   },
