@@ -19,7 +19,7 @@ type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue } & { [x: string]: 
 
 type Result = { status: 'success' | 'failed'; error: string | null; startedAt: number; finishedAt: number; processingTime: number };
 
-export type Params = {
+export type EnqueueOptions = {
 	maxRetries?: number;
 	retryDelay?: number | { exponential: boolean; base: number };
 	firstDelay?: number;
@@ -36,7 +36,7 @@ export class Kiribi extends WorkerEntrypoint<Bindings> {
 		this.prisma = new PrismaClient({ adapter });
 	}
 
-	async enqueue<T extends unknown>(binding: string, payload: T, params?: Params) {
+	async enqueue<T extends unknown>(binding: string, payload: T, params?: EnqueueOptions) {
 		console.log('Enqueuing a job', binding, payload, params);
 		const res = await this.prisma.job.create({
 			data: { binding, payload: JSON.stringify(payload), params: JSON.stringify(params) },
@@ -68,11 +68,15 @@ export class Kiribi extends WorkerEntrypoint<Bindings> {
 		return this.prisma.job.count(...query);
 	}
 
-	async sweep() {
+	async sweep(query?: { createdAtLt?: Date | string; statusIn?: string[] | '*' }) {
+		// default: 7 days ago
+		const createdAtLt = query?.createdAtLt ?? new Date(Date.now() - 1000 * 60 * 60 * 24 * 7);
+		const statusIn = query?.statusIn ?? [jobStatus.completed, jobStatus.failed, jobStatus.cancelled];
+
 		return this.prisma.job.deleteMany({
 			where: {
-				createdAt: { lt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7) },
-				status: { in: [jobStatus.completed, jobStatus.failed] },
+				createdAt: { lt: createdAtLt },
+				status: statusIn === '*' ? undefined : { in: statusIn },
 			},
 		});
 	}
@@ -88,7 +92,7 @@ export class Kiribi extends WorkerEntrypoint<Bindings> {
 	async queue(batch: MessageBatch<Job>) {
 		await Promise.allSettled(
 			batch.messages.map(async (msg) => {
-				const params: Params = JSON.parse(msg.body.params || '{}');
+				const params: EnqueueOptions = JSON.parse(msg.body.params || '{}');
 
 				const target = await this.prisma.job.findUnique({ where: { id: msg.body.id } });
 				if (!target) {
