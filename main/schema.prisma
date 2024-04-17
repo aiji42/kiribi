@@ -28,4 +28,13 @@ model Job {
   finishedAt     DateTime?
   completedAt    DateTime?
   processingTime Int?
+
+  @@index([binding])
+  @@index([status])
+  @@index([createdAt])
+  @@index([startedAt])
+  @@index([finishedAt])
+  @@index([completedAt])
+  @@index([attempts])
+  @@index([processingTime])
 }
