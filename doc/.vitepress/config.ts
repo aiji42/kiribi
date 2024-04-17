@@ -22,4 +22,8 @@ export default defineConfig({
 
 		socialLinks: [{ icon: 'github', link: 'https://github.com/aiji42/kiribi' }],
 	},
+	head: [
+		['link', { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' }],
+		['meta', { property: 'og:image', content: 'https://kiribi.pages.dev/favicon.svg' }],
+	],
 });
