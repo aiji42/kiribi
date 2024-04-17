@@ -1,6 +1,6 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 
-export abstract class KiribiJobWorker<P extends unknown = any> extends WorkerEntrypoint {
+abstract class JobWorker<P extends unknown = any> extends WorkerEntrypoint {
 	fetch() {
 		return new Response('This is Kiribi Job Worker');
 	}
@@ -10,3 +10,5 @@ export abstract class KiribiJobWorker<P extends unknown = any> extends WorkerEnt
 
 	abstract perform(payload: P): void | Promise<void>;
 }
+
+export default JobWorker;

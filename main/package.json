@@ -1,6 +1,6 @@
 {
   "name": "kiribi",
-  "version": "0.0.0-beta-0002",
+  "version": "0.0.0-beta-0003",
   "type": "module",
   "license": "MIT",
   "exports": {
@@ -19,10 +19,10 @@
       "require": "./dist/rest.cjs",
       "types": "./dist/rest.d.ts"
     },
-    "./job-worker": {
-      "import": "./dist/job-worker.mjs",
-      "require": "./dist/job-worker.cjs",
-      "types": "./dist/job-worker.d.ts"
+    "./worker": {
+      "import": "./dist/worker.mjs",
+      "require": "./dist/worker.cjs",
+      "types": "./dist/worker.d.ts"
     }
   },
   "typesVersions": {
@@ -33,8 +33,8 @@
       "rest": [
         "./dist/rest.d.ts"
       ],
-      "job-worker": [
-        "./dist/job-worker.d.ts"
+      "worker": [
+        "./dist/worker.d.ts"
       ]
     }
   },
