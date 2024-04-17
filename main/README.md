@@ -109,8 +109,8 @@ export default {
 
 ## Development
 
-See [develop.md](https://github.com/aiji42/kiribi/blob/main/develop.md).
+See [development.md](https://github.com/aiji42/kiribi/blob/main/development.md).
 
 ## License
 
-See [LICENSE](https://github.com/aiji42/kiribi/blob/main/LICENSE.txt).
+See [LICENSE](https://github.com/aiji42/kiribi/blob/main/LICENSE).
