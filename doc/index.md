@@ -2,6 +2,10 @@
 
 A simple job management library consisting of the Cloudflare stack.
 
+:::warning
+This library is still in the experimental stage. Please use it at your own risk.
+:::
+
 ## Overview
 
 ![Overview](/overview.png)
