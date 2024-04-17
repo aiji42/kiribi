@@ -6,17 +6,34 @@ A simple job management library consisting of the Cloudflare stack.
 This library is still in the experimental stage. Please use it at your own risk.
 :::
 
-## Overview
+## Motivation
+
+Popular frameworks have representative job (task) management systems. For example, Ruby on Rails has Sidekiq, Django has Celery, etc.<br>
+These systems are designed to be used in conjunction with the framework, and they are very powerful.
+
+But what about the Cloudflare stack? I still feel that there is a gap in the job management system.<br>
+Fortunately, Cloudflare has services such as Queue and D1. I thought that these services could fill this gap.
+
+Cloudflare Workers has a feature called Service Binding (RPC). This allows you to create independent modules that can be shared among workers.<br>
+For example, you can share functions such as web scraping, image processing, and AI among multiple applications.<br>
+Kiribi functions as a job management gateway using this feature. Kiribi deployed in your Cloudflare account, you can easily run common modules from each application and manage the execution status.
+
+## Features
+
+- 🎱 Easily enqueue jobs.
+- 💎 Semi-persisted queues by combining Queue and D1.
+- 💉 Easily add workers that process queues.
+- 🎛️ Easily control retries and delays for each queue.
+- 🔮 Check the execution status of jobs in real time.
+- 🕸️ REST API for job management.
+- 🕹️ Job management client for real-time monitoring.
+
+![Job Management Client](/client.png)
+
+## Under the hood
 
 ![Overview](/overview.png)
 
-- Provides a service binding that allows you to easily enqueue queues from workers.
-- Queues can be semi-persisted by combining Queue and D1.
-- Workers that process queues can be easily added by following a dedicated interface.
-- Easily control retries and delays for each queue.
-- Provides a client that allows you to check the execution status of jobs in real time.
-
-![Job Management Client](/client.png)
 
 ## Demo
 
