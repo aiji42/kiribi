@@ -56,8 +56,8 @@ npx wrangler d1 migrations apply kiribi-db --remote
 Update worker code in `src/index.ts`:
 ```typescript
 import { Kiribi } from 'kiribi'
-import client from 'kiribi/client'
-import rest from 'kiribi/rest'
+import { client } from 'kiribi/client'
+import { rest } from 'kiribi/rest'
 
 export default class extends Kiribi {
   // if you want to use the client, you can set it here
@@ -72,7 +72,7 @@ You can create a separate Worker from kiribi, or you can add it to the kiribi Wo
 
 ```typescript
 // src/index.ts
-import { KiribiJobWorker } from 'kiribi/job-worker'
+import { KiribiWorker } from 'kiribi/worker'
 
 export default class extends KiribiJobWorker {
   async perform(payload) {
@@ -82,7 +82,7 @@ export default class extends KiribiJobWorker {
 }
 ```
 
-Add the following to kiribi Worker's `wrangler.toml`:
+Add the following to Kiribi Worker's `wrangler.toml`:
 ```toml
 [[services]]
 binding = "EXAMPLE_JOB" # You can name the binding whatever you want
