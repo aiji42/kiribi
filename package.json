@@ -11,11 +11,15 @@
     "build:main": "yarn workspace kiribi build",
     "dev": "npx concurrently -n worker,client -k \"yarn run dev:main\" \"yarn dev:client\"",
     "dev:client": "yarn workspace client dev",
-    "dev:main": "yarn workspace kiribi dev"
+    "dev:main": "yarn workspace kiribi dev",
+    "docs:dev": "vitepress dev doc",
+    "docs:build": "vitepress build doc",
+    "docs:preview": "vitepress preview doc"
   },
   "devDependencies": {
     "prettier": "^3.2.5",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vitepress": "^1.1.0"
   },
   "workspaces": [
     "client",
