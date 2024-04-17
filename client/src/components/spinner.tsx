@@ -6,7 +6,7 @@ export interface ISVGProps extends React.SVGProps<SVGSVGElement> {
 	className?: string;
 }
 
-export const LoadingSpinner = ({ size = 24, className, ...props }: ISVGProps) => {
+export const Spinner = ({ size = 24, className, ...props }: ISVGProps) => {
 	return (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"

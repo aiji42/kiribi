@@ -2,13 +2,13 @@ import { ColumnFiltersState, PaginationState, SortingState } from '@tanstack/rea
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
 
-export type UseTasksArgs = {
+export type UseJobsArgs = {
 	sorting: SortingState;
 	columnFilters: ColumnFiltersState;
 	pagination: PaginationState;
 };
 
-export const useTasks = (key: UseTasksArgs) => {
+export const useJobs = (key: UseJobsArgs) => {
 	const { data, isLoading } = useSWR(
 		key,
 		async ({ sorting, pagination, columnFilters }) => {

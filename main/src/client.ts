@@ -6,6 +6,6 @@ const app = new Hono();
 
 app.get('*', serveStatic({ root: './', manifest }));
 
-export default app;
+export const client = app;
 
 export type Client = typeof app;

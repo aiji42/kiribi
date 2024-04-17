@@ -142,6 +142,6 @@ app.post(
 	},
 );
 
-export default app;
+export const rest = app;
 
 export type Rest = typeof app;

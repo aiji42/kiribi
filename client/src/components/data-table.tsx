@@ -14,8 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DataTablePagination } from './data-table-pagination';
 import { DataTableToolbar } from './data-table-toolbar';
 import { columns } from '@/components/columns';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { useTasks } from '@/hooks/useTasks';
+import { Spinner } from '@/components/spinner.tsx';
+import { useJobs } from '@/hooks/useJobs.ts';
 import useLocalStorage from 'use-local-storage';
 import { useState } from 'react';
 
@@ -29,7 +29,7 @@ export function DataTable() {
 	const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
 	const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
-	const { data, isLoading } = useTasks({ sorting, pagination, columnFilters });
+	const { data, isLoading } = useJobs({ sorting, pagination, columnFilters });
 
 	const table = useReactTable({
 		data: data?.results ?? [],
@@ -64,7 +64,7 @@ export function DataTable() {
 		<div className="space-y-4">
 			<DataTableToolbar table={table} />
 			<div className="rounded-md border relative">
-				{isLoading && <LoadingSpinner size={48} className="opacity-60 absolute inset-1/2 z-10" />}
+				{isLoading && <Spinner size={48} className="opacity-60 absolute inset-1/2 z-10" />}
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (

@@ -55,7 +55,7 @@ npx wrangler d1 migrations apply kiribi-db --remote
 
 Update worker code in `src/index.ts`:
 ```typescript
-import Kiribi from 'kiribi'
+import { Kiribi } from 'kiribi'
 import client from 'kiribi/client'
 import rest from 'kiribi/rest'
 

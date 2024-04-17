@@ -5,7 +5,7 @@ import { PlusIcon } from '@radix-ui/react-icons';
 import { Textarea } from '@/components/ui/textarea.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.tsx';
 import { useEffect, useReducer, useState } from 'react';
-import { useTasks } from '@/hooks/useTasks.ts';
+import { useJobs } from '@/hooks/useJobs.ts';
 import { Table } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input.tsx';
 import { Checkbox } from '@/components/ui/checkbox.tsx';
@@ -53,7 +53,7 @@ const initialState: Values = {
 	retryDelay: 10,
 };
 
-export function NewTaskDialog<TData>({ table }: { table: Table<TData> }) {
+export function NewJobDialog<TData>({ table }: { table: Table<TData> }) {
 	const [open, setOpen] = useState(false);
 	const { data } = useAvailableBindings(open);
 	const [values, dispatch] = useReducer((s: Values, a: Action) => {
@@ -72,7 +72,7 @@ export function NewTaskDialog<TData>({ table }: { table: Table<TData> }) {
 				return initialState;
 		}
 	}, initialState);
-	const { create, createCompleted, isCreating, createStatusReset } = useTasks({
+	const { create, createCompleted, isCreating, createStatusReset } = useJobs({
 		sorting: table.getState().sorting,
 		columnFilters: table.getState().columnFilters,
 		pagination: table.getState().pagination,
@@ -95,7 +95,7 @@ export function NewTaskDialog<TData>({ table }: { table: Table<TData> }) {
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
-					<DialogTitle>Add New Task</DialogTitle>
+					<DialogTitle>Add New Job</DialogTitle>
 				</DialogHeader>
 				<div className="grid gap-4 py-4">
 					<div className="grid grid-cols-4 items-center gap-4">

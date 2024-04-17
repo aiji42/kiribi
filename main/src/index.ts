@@ -1,10 +1,10 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 import { PrismaD1 } from '@prisma/adapter-d1';
-import { Job, PrismaClient, Prisma } from '@prisma/client';
+import { type Job, type Prisma, PrismaClient } from '@prisma/client';
 import { Hono } from 'hono';
-import { KiribiJobWorker } from './job-worker';
-import { Rest } from './rest';
-import { Client } from './client';
+import { type KiribiWorker } from './worker';
+import { type Rest } from './rest';
+import { type Client } from './client';
 
 const jobStatus = {
 	pending: 'PENDING',
@@ -15,7 +15,7 @@ const jobStatus = {
 	cancelled: 'CANCELLED',
 };
 
-type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue } & { [x: string]: Service<KiribiJobWorker> };
+type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue } & { [x: string]: Service<KiribiWorker> };
 
 type Result = { status: 'success' | 'failed'; error: string | null; startedAt: number; finishedAt: number; processingTime: number };
 
@@ -178,5 +178,3 @@ export class Kiribi extends WorkerEntrypoint<Bindings> {
 		batch.ackAll();
 	}
 }
-
-export default Kiribi;

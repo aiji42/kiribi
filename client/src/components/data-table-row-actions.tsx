@@ -13,7 +13,7 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
-import { useTasks } from '@/hooks/useTasks.ts';
+import { useJobs } from '@/hooks/useJobs.ts';
 
 interface DataTableRowActionsProps<TData extends { id: string }> {
 	row: Row<TData>;
@@ -23,7 +23,7 @@ interface DataTableRowActionsProps<TData extends { id: string }> {
 export function DataTableRowActions<TData extends { id: string }>({ row, table }: DataTableRowActionsProps<TData>) {
 	const [openDelete, onOpenChangeDelete] = useState(false);
 	const [openCancel, onOpenChangeCancel] = useState(false);
-	const { deleteJob, cancel } = useTasks({
+	const { deleteJob, cancel } = useJobs({
 		sorting: table.getState().sorting,
 		columnFilters: table.getState().columnFilters,
 		pagination: table.getState().pagination,
