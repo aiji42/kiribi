@@ -4,7 +4,7 @@ A simple job management library consisting of the Cloudflare stack.
 
 ## Overview
 
-![Overview](overview.png)
+![Overview](/overview.png)
 
 - Provides a service binding that allows you to easily enqueue queues from workers.
 - Queues can be semi-persisted by combining Queue and D1.
@@ -12,7 +12,7 @@ A simple job management library consisting of the Cloudflare stack.
 - Easily control retries and delays for each queue.
 - Provides a client that allows you to check the execution status of jobs in real time.
 
-![Job Management Client](client.png)
+![Job Management Client](/client.png)
 
 ## Demo
 
@@ -28,7 +28,7 @@ Every hour, the demo client page is reset to the initial state.
 
 Add your job by clicking the "+ Job" button.
 
-![Add Job](demo.png)
+![Add Job](/demo.png)
 
 Select a job from the Binding.
 
@@ -39,7 +39,7 @@ Enter a JSON data representing the success rate (0~1) in `payload`.
 { "chance": 0.5 }
 ```
 
-![Flaky Job](flaky-job-example.png)
+![Flaky Job](/flaky-job-example.png)
 
 Select `SLOW_JOB` to delay the job.<br>
 Enter a JSON data representing the delay time (1000~15000) in `payload`.
@@ -48,4 +48,4 @@ Enter a JSON data representing the delay time (1000~15000) in `payload`.
 { "delay": 10000 }
 ```
 
-![Slow Job](slow-job-example.png)
+![Slow Job](/slow-job-example.png)

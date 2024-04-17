@@ -3,7 +3,7 @@
 [//]: # (ジョブの実行状況を確認するためのWebクライアントを利用できます)
 You can use a web client to check the execution status of jobs.
 
-![Job Management Client](client.png)
+![Job Management Client](/client.png)
 
 [//]: # (KiribiのクライアントをKiribiのWorkerに設定します)
 Set the Kiribi client to the Kiribi Worker.
