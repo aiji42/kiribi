@@ -50,7 +50,7 @@ const initialState: Values = {
 	payload: '',
 	maxRetries: 3,
 	exponential: false,
-	retryDelay: 10,
+	retryDelay: 0,
 };
 
 export function NewJobDialog<TData>({ table }: { table: Table<TData> }) {
