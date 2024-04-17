@@ -11,15 +11,13 @@ You will be asked for the project name, so feel free to set it as you like.
 npm create cloudflare@latest -- --ts --type=hello-world
 ```
 
-[//]: # (作成したプロジェクトのディレクトリで`kiribi`と`prisma`をインストールします)
 Install `kiribi` and `prisma` in the directory of the created project.
 
 ```bash
+npm install -D prisma
 npm install kiribi prisma
 ```
 
-[//]: # (Kiribi用のD1データベースとQueueを構築します)
-[//]: # (データベース名とキュー名は自由に設定して構いませんが、表示される`database_id`は後のステップで使用するのでコピーしてください)
 Create a D1 database and a queue for Kiribi.<br>
 You can set the database name and queue name as you like, but please copy the `database_id` displayed as it will be used in later steps.
 
@@ -32,7 +30,6 @@ npx wrangler d1 create kiribi-db
 npx wrangler queues create kiribi-queue
 ```
 
-[//]: # (`wrangler.toml`を以下のように更新します)
 Update `wrangler.toml` as follows:
 
 ```toml
@@ -59,14 +56,11 @@ binding = "KIRIBI" # Be sure to set KIRIBI for the service binding
 service = "my-kiribi" # same as `name`
 ```
 
-[//]: # (max_retriesがジョブのリトライ設定のハードリミットになります。余裕を持って設定してください。)
-[//]: # (例えばmax_retriesが5ならリトライ回数は4回となります。)
 ::: info
 `max_retries` is a hard limit for the job retry setting. Please set it with some margin.<br>
 For example, if `max_retries` is 5, the number of retries will be 4.
 :::
 
-[//]: # (データベースをマイグレーションします)
 Migrate the database.
 
 If you want to run it locally:
@@ -81,7 +75,6 @@ If you want to run it remotely:
 npx wrangler d1 migrations apply kiribi-db --remote
 ```
 
-[//]: # (`src/index.ts`のworkerコードを更新します)
 Update the worker code in `src/index.ts`.
 
 ```typescript
@@ -90,7 +83,6 @@ import { Kiribi } from 'kiribi'
 export default class extends Kiribi {}
 ```
 
-[//]: # (workerをデプロイします)
 Deploy the worker.
 
 ```bash
@@ -122,15 +114,11 @@ service = "my-kiribi"                                               // [!code --
 
 <img src="/processing-workers.png" width="420px">
 
-[//]: # (Kiribiにエンキューされたジョブを処理するワーカーを作成します)
-[//]: # (このワーカーは先のステップで作成したKiribiのワーカーに追加しても構いませんし、別のワーカーとして作成しても構いません)
-[//]: # (以下はKiribiのワーカーに追加する場合の例です。)
 Create a worker to process jobs enqueued in Kiribi.<br>
 You can add this worker to the Kiribi worker created in the previous step, or you can create it as a separate worker.<br>
 
 ### Case of adding to the Kiribi worker
 
-[//]: # (`src/index.ts`に以下を追加します)
 Add the following to `src/index.ts`.
 
 ```typescript
@@ -149,7 +137,6 @@ export class MyJobWorker extends KiribiWorker { // [!code ++]
 
 For more information on `perform`, click [here](/how-to-use).
 
-[//]: # (`wrangler.toml`に以下を追加します)
 Add the following to `wrangler.toml`.
 
 ```toml
@@ -171,12 +158,9 @@ entrypoint = "MyJobWorker" # the name of exported class         // [!code ++]
 
 ### Case of creating a separate worker
 
-[//]: # (処理系をKiribiのワーカーとは別にする場合は次のようにします)
-[//]: # (ワーカーの作成方法は省略します)
 If you want to separate the processing system from the Kiribi worker, do the following.<br>
 The method of creating a worker is omitted.
 
-[//]: # (別のワーカーの`src/index.ts`を次のようにします)
 Update the `src/index.ts` of the other worker as follows.
 
 ```typescript
@@ -199,7 +183,6 @@ export class FooJobWorker extends KiribiWorker {
 }
 ```
 
-[//]: # (Kiribiワーカーの`wrangler.toml`に次のように追加します)
 Add the following to the `wrangler.toml` of the Kiribi worker.
 
 ```toml
@@ -223,7 +206,6 @@ service = "other-job-worker"                                    // [!code ++]
 entrypoint = "FooJobWorker" # the name of exported class        // [!code ++]
 ```
 
-[//]: # (ワーカーをデプロイします)
 Deploy the worker.
 
 ```bash
@@ -234,12 +216,9 @@ npx wrangler deploy
 
 <img src="/enqueuing-worker.png" width="420px">
 
-[//]: # (Kiribiにジョブをエンキューするワーカーを作成します)
-[//]: # (ワーカーの作成方法は省略します)
 Create a worker to enqueue jobs in Kiribi.<br>
 The method of creating a worker is omitted.
 
-[//]: # (ワーカーの`wrangler.toml`を次のようにします)
 Update the `wrangler.toml` of the worker as follows.
 
 ```toml
@@ -252,7 +231,6 @@ binding = "KIRIBI" # Be sure to set KIRIBI for the service binding
 service = "my-kiribi" # The name of the Kiribi worker
 ```
 
-[//]: # (`src/index.ts`を次のようにします)
 
 ```typescript
 import { Kiribi } from 'kiribi'
