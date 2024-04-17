@@ -33,6 +33,7 @@ export const columns: ColumnDef<Job>[] = [
 	},
 	{
 		accessorKey: 'binding',
+		enableSorting: false,
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Binding" />,
 		cell: ({ row }) => {
 			return (
@@ -44,6 +45,7 @@ export const columns: ColumnDef<Job>[] = [
 	},
 	{
 		accessorKey: 'status',
+		enableSorting: false,
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
 		cell: ({ row }) => {
 			if (row.depth) {

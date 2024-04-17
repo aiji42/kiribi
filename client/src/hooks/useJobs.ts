@@ -19,7 +19,7 @@ export const useJobs = (key: UseJobsArgs) => {
 				},
 				body: JSON.stringify({
 					filter: {
-						type: columnFilters.find((f) => f.id === 'type')?.value,
+						binding: columnFilters.find((f) => f.id === 'binding')?.value,
 						status: columnFilters.find((f) => f.id === 'status')?.value,
 					},
 					page: {

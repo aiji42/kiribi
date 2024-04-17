@@ -90,7 +90,7 @@ export function NewJobDialog<TData>({ table }: { table: Table<TData> }) {
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button variant="outline" size="sm" className="ml-auto h-8">
-					<PlusIcon />
+					<PlusIcon className="mr-2 size-4" /> Job
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">

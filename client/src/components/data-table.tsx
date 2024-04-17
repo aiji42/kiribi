@@ -25,7 +25,7 @@ export function DataTable() {
 		completedAt: false,
 	});
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-	const [sorting, setSorting] = useState<SortingState>([]);
+	const [sorting, setSorting] = useState<SortingState>([{ id: 'createdAt', desc: true }]);
 	const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
 	const [expanded, setExpanded] = React.useState<ExpandedState>({});
 

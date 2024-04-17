@@ -7,6 +7,7 @@ import { DataTableViewOptions } from './data-table-view-options';
 import { statuses } from '../data/data';
 import { DataTableFacetedFilter } from './data-table-faceted-filter';
 import { NewJobDialog } from '@/components/new-job-dialog.tsx';
+import { useAvailableBindings } from '@/hooks/useAvailableBindings.ts';
 
 interface DataTableToolbarProps<TData> {
 	table: Table<TData>;
@@ -14,14 +15,19 @@ interface DataTableToolbarProps<TData> {
 
 export function DataTableToolbar<TData>({ table }: DataTableToolbarProps<TData>) {
 	const isFiltered = table.getState().columnFilters.length > 0;
+	const { data: bindings = [] } = useAvailableBindings(true);
 
 	return (
 		<div className="flex items-center justify-between">
 			<div className="flex flex-1 items-center space-x-2">
+				{table.getColumn('binding') && (
+					<DataTableFacetedFilter
+						column={table.getColumn('binding')}
+						title="Binding"
+						options={bindings.map((binding) => ({ value: binding, label: binding }))}
+					/>
+				)}
 				{table.getColumn('status') && <DataTableFacetedFilter column={table.getColumn('status')} title="Status" options={statuses} />}
-				{/*{table.getColumn('priority') && (*/}
-				{/*	<DataTableFacetedFilter column={table.getColumn('priority')} title="Priority" options={priorities} />*/}
-				{/*)}*/}
 				{isFiltered && (
 					<Button variant="ghost" onClick={() => table.resetColumnFilters()} className="h-8 px-2 lg:px-3">
 						Reset
