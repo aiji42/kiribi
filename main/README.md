@@ -27,11 +27,11 @@ export default class extends Kiribi {
   rest = rest
 }
 
-import { KiribiJobWorker } from 'kiribi/worker'
+import { KiribiPerformer } from 'kiribi/performer'
 
-export class MyJobWorker extends KiribiJobWorker {
+export class MyPerformer extends KiribiPerformer {
   async perform(payload) {
-    console.log('Job Worker', payload)
+    console.log('preform', payload)
   }
 }
 ```
@@ -58,7 +58,7 @@ max_retries = 5
 
 [[services]]
 binding = "KIRIBI"
-service = "your-worker-name"
+service = "my-kiribi"
 
 [site]
 bucket = "./node_modules/kiribi/client"
@@ -66,7 +66,7 @@ bucket = "./node_modules/kiribi/client"
 [[services]]
 binding = "MY_JOB"
 service = "my-kiribi"
-entrypoint = "MyJobWorker"
+entrypoint = "MyPerformer"
 ```
 
 ```bash

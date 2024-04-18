@@ -1,8 +1,16 @@
 # Getting Started
 
-## 1. Create a Job Manager (Kiribi worker)
+![Overview](/overview.png)
 
-<img src="/kiribi-worker.png" width="420px">
+In this section, we will build in three parts.
+- Job Manager (Kiribi worker): The center of the overview diagram
+  - Receives and manages job queues
+- Performer (Job processing worker): The lower part of the overview diagram
+  - Processes job queues
+- Enqueuer (Job enqueuing worker): The upper part of the overview diagram
+  - Enqueues job queues
+
+## 1. Create a Job Manager (Kiribi worker)
 
 Use `create-cloudflare-cli` (C3) to build the base worker.<br>
 You will be asked for the project name, so feel free to set it as you like.
@@ -110,9 +118,7 @@ service = "my-kiribi"                                               // [!code --
 ```
 :::
 
-## 2. Create job processing workers
-
-<img src="/processing-workers.png" width="420px">
+## 2. Create Performers (Job processing workers)
 
 Create a worker to process jobs enqueued in Kiribi.<br>
 You can add this worker to the Kiribi worker created in the previous step, or you can create it as a separate worker.<br>
@@ -123,16 +129,16 @@ Add the following to `src/index.ts`.
 
 ```typescript
 import { Kiribi } from 'kiribi'
-import { KiribiWorker } from 'kiribi/worker' // [!code ++]
+import { KiribiPerformer } from 'kiribi/performer' // [!code ++]
 
 export default class extends Kiribi {}
 
-export class MyJobWorker extends KiribiWorker { // [!code ++]
-  async perform(payload) {                      // [!code ++]
-    // Do something with the payload            // [!code ++]
-    console.log('Job Worker', payload)          // [!code ++]
-  }                                             // [!code ++]
-}                                               // [!code ++]
+export class MyPerformer extends KiribiPerformer { // [!code ++]
+  async perform(payload) {                         // [!code ++]
+    // Do something with the payload               // [!code ++]
+    console.log('perform', payload)                // [!code ++]
+  }                                                // [!code ++]
+}                                                  // [!code ++]
 ```
 
 For more information on `perform`, click [here](/how-to-use).
@@ -152,38 +158,39 @@ service = "my-kiribi"
 
 [[services]]                                                    // [!code ++]
 binding = "MY_JOB" # You can name the binding whatever you want // [!code ++]
-service = "my-job-worker" # same as `name`                      // [!code ++]
-entrypoint = "MyJobWorker" # the name of exported class         // [!code ++]
+service = "my-kiribi" # same as `name`                          // [!code ++]
+entrypoint = "MyPerformer" # the name of exported class         // [!code ++]
 ```
 
 ### Case of creating a separate worker
 
 If you want to separate the processing system from the Kiribi worker, do the following.<br>
-The method of creating a worker is omitted.
+For example, create a worker named `my-performing-worker`.
+(The method of creating a worker is omitted.)
 
-Update the `src/index.ts` of the other worker as follows.
+Update the `src/index.ts` of `my-performer-worker` as follows.
 
 ```typescript
-import { KiribiWorker } from 'kiribi/worker'
+import { KiribiPerformer } from 'kiribi/performer'
 
 // There must be at least one default export
-export default class extends KiribiWorker {
+export default class extends KiribiPerformer {
   async perform(payload) {
     // Do something with the payload
-    console.log('Job Worker', payload)
+    console.log('perform', payload)
   }
 }
 
 // Add other workers as needed
-export class FooJobWorker extends KiribiWorker {
+export class FooPerformer extends KiribiPerformer {
   async perform(payload) {
     // Do something with the payload
-    console.log('Job Worker', payload)
+    console.log('perform', payload)
   }
 }
 ```
 
-Add the following to the `wrangler.toml` of the Kiribi worker.
+Add the following to the `wrangler.toml` of the Kiribi worker (`my-kiribi`).
 
 ```toml
 name = "my-kiribi"
@@ -196,25 +203,17 @@ main = "src/index.ts"
 binding = "KIRIBI"
 service = "my-kiribi"
 
-[[services]]                                                    // [!code ++]
-binding = "MY_JOB" # You can name the binding whatever you want // [!code ++]
-service = "other-job-worker" # The name of the job worker       // [!code ++]
-                                                                // [!code ++]
-[[services]]                                                    // [!code ++]
-binding = "FOO_JOB"                                             // [!code ++]
-service = "other-job-worker"                                    // [!code ++]
-entrypoint = "FooJobWorker" # the name of exported class        // [!code ++]
+[[services]]                                                        // [!code ++]
+binding = "MY_JOB" # You can name the binding whatever you want     // [!code ++]
+service = "my-performing-worker" # The name of the performer worker // [!code ++]
+                                                                    // [!code ++]
+[[services]]                                                        // [!code ++]
+binding = "FOO_JOB"                                                 // [!code ++]
+service = "my-performing-worker"                                    // [!code ++]
+entrypoint = "FooPerformer" # the name of exported class            // [!code ++]
 ```
 
-Deploy the worker.
-
-```bash
-npx wrangler deploy
-```
-
-## 3. Create enqueuing workers
-
-<img src="/enqueuing-worker.png" width="420px">
+## 3. Create Enqueuers (Job enqueuing workers)
 
 Create a worker to enqueue jobs in Kiribi.<br>
 The method of creating a worker is omitted.

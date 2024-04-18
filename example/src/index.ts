@@ -13,9 +13,9 @@ export default class extends Kiribi {
 }
 
 // performer workers; You can split these classes into another worker
-import { KiribiWorker } from 'kiribi/worker';
+import { KiribiPerformer } from 'kiribi/performer';
 
-export class SlowJob extends KiribiWorker {
+export class SlowJob extends KiribiPerformer {
 	async perform(payload: unknown) {
 		assertPayloadForSlowJob(payload);
 		await new Promise((r) => setTimeout(r, Math.max(Math.min(15000, payload.delay), 1000)));
@@ -28,7 +28,7 @@ function assertPayloadForSlowJob(payload: unknown): asserts payload is { delay: 
 	if (typeof payload.delay !== 'number') throw new Error('Invalid payload; input `{ "delay": 1000~15000 }`');
 }
 
-export class FlakyJob extends KiribiWorker {
+export class FlakyJob extends KiribiPerformer {
 	async perform(payload: unknown) {
 		assertPayloadForFlakyJob(payload);
 		if (Math.random() > Math.max(Math.min(1, payload.chance), 0)) throw new Error('Failed to perform job because of your daily behavior');

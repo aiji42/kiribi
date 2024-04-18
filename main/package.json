@@ -19,10 +19,10 @@
       "require": "./dist/rest.cjs",
       "types": "./dist/rest.d.ts"
     },
-    "./worker": {
-      "import": "./dist/worker.mjs",
-      "require": "./dist/worker.cjs",
-      "types": "./dist/worker.d.ts"
+    "./performer": {
+      "import": "./dist/performer.mjs",
+      "require": "./dist/performer.cjs",
+      "types": "./dist/performer.d.ts"
     }
   },
   "typesVersions": {
@@ -34,7 +34,7 @@
         "./dist/rest.d.ts"
       ],
       "worker": [
-        "./dist/worker.d.ts"
+        "./dist/performer.d.ts"
       ]
     }
   },

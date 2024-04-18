@@ -2,7 +2,7 @@
 
 ## Enqueue Job
 
-You can enqueue a job by calling the `enqueue` method of `KIRIBI` service.
+You can enqueue a job from enqueuer workers by calling the `enqueue` method of `KIRIBI` service.
 
 ```typescript
 import { Kiribi } from 'kiribi'
@@ -52,15 +52,15 @@ type EnqueueOptions = {
 
 ## Perform Job
 
-You can create a job worker by extending `KiribiWorker` and implementing the `perform` method.
+You can create job processing workers by extending `KiribiPerformer` and implementing the `perform` method.
 
 ```typescript
-import { KiribiWorker } from 'kiribi/worker'
+import { KiribiPerformer } from 'kiribi/performer'
 
-export default class extends KiribiWorker {
+export default class extends KiribiPerformer {
   async perform(payload) {
     // Do something with the payload
-    console.log('Job Worker', payload)
+    console.log('perform', payload)
   }
 }
 ```
@@ -70,11 +70,13 @@ export default class extends KiribiWorker {
 The `perform` method has the following signature:
 
 ```typescript
-type perform = (payload: any) => Promise<void>
+interface KiribiPerformer extends WorkerEntrypoint {
+  perform(payload: any): void | Promise<void>;
+}
 ```
 
 - `payload`(Required): The payload of the job.
   - The payload is the same as the one passed to the `enqueue` method.
-  - The payload can be any type.
+  - The payload can be any **json serializable** type.
 
 If thrown an error in the `perform` method, the job is retried according to the `maxRetries` and `retryDelay` set in the `enqueue` method.

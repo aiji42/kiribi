@@ -2,7 +2,7 @@ import { WorkerEntrypoint } from 'cloudflare:workers';
 import { PrismaD1 } from '@prisma/adapter-d1';
 import { type Job, type Prisma, PrismaClient } from '@prisma/client';
 import { Hono } from 'hono';
-import { type KiribiWorker } from './worker';
+import { type KiribiPerformer } from './performer';
 import { type Rest } from './rest';
 import { type Client } from './client';
 
@@ -15,7 +15,7 @@ const jobStatus = {
 	cancelled: 'CANCELLED',
 };
 
-type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue } & { [x: string]: Service<KiribiWorker> };
+type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue } & { [x: string]: Service<KiribiPerformer> };
 
 type Result = { status: 'success' | 'failed'; error: string | null; startedAt: number; finishedAt: number; processingTime: number };
 
