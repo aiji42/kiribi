@@ -31,3 +31,4 @@ See documentation at [kiribi.pages.dev](https://kiribi.pages.dev/).
   - [ ] Form validation for the client
   - [ ] Leave enqueue source information in the database
   - [ ] Directly call from enqueuer to performer via Kiribi without using Queue
+  - [ ] Hooks on failure and success
