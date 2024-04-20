@@ -1,6 +1,6 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 
-export abstract class KiribiPerformer<P extends unknown = any> extends WorkerEntrypoint {
+export abstract class KiribiPerformer<P extends unknown = any, Env = unknown> extends WorkerEntrypoint<Env> {
 	fetch() {
 		return new Response('This is Kiribi Performer');
 	}
