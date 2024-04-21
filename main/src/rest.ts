@@ -95,7 +95,7 @@ app.patch('/jobs/:id/cancel', async (c) => {
 app.get('/bindings', async (c) => {
 	const bindings = await Promise.all(
 		Object.entries(c.env).map(async ([name, binding]) => {
-			if (!('isPerformer' in binding)) return [name, false] as const;
+			if (!(typeof binding === 'object' && 'isPerformer' in binding)) return [name, false] as const;
 			try {
 				// @ts-ignore
 				await binding.isPerformer();
