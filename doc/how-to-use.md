@@ -80,3 +80,66 @@ interface KiribiPerformer extends WorkerEntrypoint {
   - The payload can be any **json serializable** type.
 
 If thrown an error in the `perform` method, the job is retried according to the `maxRetries` and `retryDelay` set in the `enqueue` method.
+
+## Tips
+
+### Automatically complete the input of `enqueue` by type
+
+You can complete the input of `enqueue` by passing the object of `KiribiPerformer` to the generic of `Kiribi`.
+
+```typescript
+import { Kiribi } from 'kiribi'
+import { KiribiPerformer } from 'kiribi/performer'
+
+type Performers = {
+  MY_JOB: KiribiPerformer<{ key1: string; key2: number }>
+}
+
+interface Env {
+  KIRIBI: Service<Kiribi<Performers>>
+}
+
+export default {
+  async fetch(req: Request, env: Env, ctx: ExecutionContext) {
+    // The arguments of `enqueue` are automatically completed by the type of `MY_JOB`.
+    await env.KIRIBI.enqueue('MY_JOB', { key1: 'value', key2: 1 }) // [!code highlight]
+
+    // This is type error (key2 is not a number)
+    // await env.KIRIBI.enqueue('MY_JOB', { key1: 'value', key2: '1' }) // [!code highlight]
+
+    return new Response('OK')
+  }
+}
+```
+
+If you have a class that extends `KiribiPerformer` in the same project, you can complete the type more easily.
+
+```typescript
+import { KiribiPerformer } from 'kiribi/perfomer'
+
+export class MyJob extends KiribiPerformer {
+  async perform(payload: { key1: string; key2: number }) {
+    // Do something with the payload
+    console.log('perform', payload)
+  }
+}
+```
+
+```typescript
+import { Kiribi } from 'kiribi'
+import { MyJob } from './my-job'
+
+interface Env {
+  // You can complete the type from the argument of the performer
+  KIRIBI: Service<Kiribi<{ 'MY_JOB': MyJob }>>
+}
+
+export default {
+  async fetch(req: Request, env: Env, ctx: ExecutionContext) {
+    // The arguments of `enqueue` are automatically completed by the type of `MY_JOB`.
+    await env.KIRIBI.enqueue('MY_JOB', { key1: 'value', key2: 1 }) // [!code highlight]
+
+    return new Response('OK')
+  }
+}
+```

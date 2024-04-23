@@ -32,4 +32,4 @@ See documentation at [kiribi.pages.dev](https://kiribi.pages.dev/).
   - [ ] Leave enqueue source information in the database
   - [ ] Directly call from enqueuer to performer via Kiribi without using Queue
   - [ ] Hooks on failure and success
-  - [ ] Autocomplete by type of binding name and payload
+  - [x] Autocomplete by type of binding name and payload

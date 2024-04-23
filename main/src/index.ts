@@ -2,9 +2,13 @@ import { WorkerEntrypoint } from 'cloudflare:workers';
 import { PrismaD1 } from '@prisma/adapter-d1';
 import { type Job, type Prisma, PrismaClient } from '@prisma/client';
 import { Hono } from 'hono';
-import { type KiribiPerformer } from './performer';
+import { InferPayload, type KiribiPerformer } from './performer';
 import { type Rest } from './rest';
 import { type Client } from './client';
+
+function assert(condition: any): asserts condition {
+	if (!condition) throw new Error('Assertion failed');
+}
 
 const jobStatus = {
 	pending: 'PENDING',
@@ -14,6 +18,12 @@ const jobStatus = {
 	failed: 'FAILED',
 	cancelled: 'CANCELLED',
 };
+
+type Performers = {
+	[binding: string]: KiribiPerformer;
+};
+
+type InferPerformer<T extends Performers, K extends keyof T> = T[K] extends infer P ? P : never;
 
 type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue } & { [x: string]: Service<KiribiPerformer> };
 
@@ -25,7 +35,7 @@ export type EnqueueOptions = {
 	firstDelay?: number;
 };
 
-export class Kiribi extends WorkerEntrypoint<Bindings> {
+export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Bindings> {
 	private prisma: PrismaClient<{ adapter: PrismaD1 }>;
 	public client: Client | null = null;
 	public rest: Rest | null = null;
@@ -36,7 +46,8 @@ export class Kiribi extends WorkerEntrypoint<Bindings> {
 		this.prisma = new PrismaClient({ adapter });
 	}
 
-	async enqueue<T extends unknown>(binding: string, payload: T, params?: EnqueueOptions) {
+	async enqueue<K extends keyof T, P extends InferPayload<InferPerformer<T, K>>>(binding: K, payload: P, params?: EnqueueOptions) {
+		assert(typeof binding === 'string');
 		console.log('Enqueuing a job', binding, payload, params);
 		const res = await this.prisma.job.create({
 			data: { binding, payload: JSON.stringify(payload), params: JSON.stringify(params) },

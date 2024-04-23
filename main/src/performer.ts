@@ -10,3 +10,5 @@ export abstract class KiribiPerformer<P extends unknown = any, Env = unknown> ex
 
 	abstract perform(payload: P): void | Promise<void>;
 }
+
+export type InferPayload<P> = P extends KiribiPerformer<infer T> ? T : never;
