@@ -23,8 +23,6 @@ type Performers = {
 	[binding: string]: KiribiPerformer;
 };
 
-type InferPerformer<T extends Performers, K extends keyof T> = T[K] extends infer P ? P : never;
-
 type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue } & { [x: string]: Service<KiribiPerformer> };
 
 type Result = { status: 'success' | 'failed'; error: string | null; startedAt: number; finishedAt: number; processingTime: number };
@@ -34,6 +32,10 @@ export type EnqueueOptions = {
 	retryDelay?: number | { exponential: boolean; base: number };
 	firstDelay?: number;
 };
+
+type EnqueueArgs<M extends Performers> = {
+	[K in keyof M]: [K, InferPayload<M[K]>, EnqueueOptions?];
+}[keyof M];
 
 export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Bindings> {
 	private prisma: PrismaClient<{ adapter: PrismaD1 }>;
@@ -46,7 +48,7 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 		this.prisma = new PrismaClient({ adapter });
 	}
 
-	async enqueue<K extends keyof T, P extends InferPayload<InferPerformer<T, K>>>(binding: K, payload: P, params?: EnqueueOptions) {
+	async enqueue(...[binding, payload, params]: EnqueueArgs<T>) {
 		assert(typeof binding === 'string');
 		console.log('Enqueuing a job', binding, payload, params);
 		const res = await this.prisma.job.create({
