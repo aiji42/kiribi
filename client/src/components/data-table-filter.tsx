@@ -18,8 +18,7 @@ interface DataTableFacetedFilterProps<TData, TValue> {
 	}[];
 }
 
-export function DataTableFacetedFilter<TData, TValue>({ column, title, options }: DataTableFacetedFilterProps<TData, TValue>) {
-	// const facets = column?.getFacetedUniqueValues();
+export function DataTableFilter<TData, TValue>({ column, title, options }: DataTableFacetedFilterProps<TData, TValue>) {
 	const selectedValues = new Set(column?.getFilterValue() as string[]);
 
 	return (

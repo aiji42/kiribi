@@ -3,7 +3,6 @@ import {
 	ColumnFiltersState,
 	SortingState,
 	VisibilityState,
-	PaginationState,
 	flexRender,
 	getCoreRowModel,
 	useReactTable,
@@ -26,10 +25,11 @@ export function DataTable() {
 	});
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [sorting, setSorting] = useState<SortingState>([{ id: 'createdAt', desc: true }]);
-	const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+	const [pageSize, setPageSize] = useLocalStorage<number>('pageSize', 10);
+	const [pageIndex, setPageIndex] = useState(0);
 	const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
-	const { data, isLoading } = useJobs({ sorting, pagination, columnFilters });
+	const { data, isLoading } = useJobs({ sorting, pagination: { pageSize, pageIndex }, columnFilters });
 
 	const table = useReactTable({
 		data: data?.results ?? [],
@@ -38,7 +38,7 @@ export function DataTable() {
 			sorting,
 			columnVisibility,
 			columnFilters,
-			pagination,
+			pagination: { pageSize, pageIndex },
 			expanded,
 		},
 		manualPagination: true,
@@ -47,15 +47,20 @@ export function DataTable() {
 			const results = JSON.parse(row.result ?? '[]');
 			return results.filter((r: { status: string }) => r.status === 'failed');
 		},
-		pageCount: Math.ceil(data?.totalCount / pagination.pageSize),
+		pageCount: Math.ceil(data?.totalCount / pageSize),
 		onSortingChange: setSorting,
 		onColumnFiltersChange: (fn) => {
-			setPagination((c) => ({ ...c, pageIndex: 0 }));
+			setPageIndex(0);
 			setColumnFilters(fn);
 		},
 		// @ts-ignore
 		onColumnVisibilityChange: (fn) => setColumnVisibility(fn(columnVisibility)),
-		onPaginationChange: setPagination,
+		onPaginationChange: (fn) => {
+			// @ts-ignore
+			const newPagination = fn({ pageIndex, pageSize });
+			setPageIndex(newPagination.pageIndex);
+			setPageSize(newPagination.pageSize);
+		},
 		getCoreRowModel: getCoreRowModel(),
 		getExpandedRowModel: getExpandedRowModel(),
 	});
