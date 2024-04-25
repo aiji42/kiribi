@@ -1,5 +1,5 @@
 // job manager worker
-import { Kiribi } from 'kiribi';
+import { Kiribi, FailureHandlerMeta, SuccessHandlerMeta } from 'kiribi';
 import { client } from 'kiribi/client';
 import { rest } from 'kiribi/rest';
 
@@ -9,6 +9,14 @@ export default class extends Kiribi {
 	async scheduled() {
 		// delete jobs older than 10 minutes
 		await this.sweep({ createdAtLt: new Date(Date.now() - 1000 * 60 * 10), statusIn: '*' });
+	}
+	async onSuccess(binding: string, payload: any, result: any, meta: SuccessHandlerMeta) {
+		console.log(result);
+		console.log('onSuccess', binding, payload, meta);
+	}
+	async onFailure(binding: string, payload: any, error: Error, meta: FailureHandlerMeta) {
+		console.log('onFail', binding, payload, meta);
+		console.log(error);
 	}
 }
 
