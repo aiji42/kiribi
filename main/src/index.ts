@@ -37,6 +37,10 @@ type EnqueueArgs<M extends Performers> = {
 	[K in keyof M]: [K, InferPayload<M[K]>, EnqueueOptions?];
 }[keyof M];
 
+export type SuccessHandlerMeta = { startedAt: Date; finishedAt: Date; attempts: number };
+
+export type FailureHandlerMeta = { startedAt: Date; finishedAt: Date; isFinal: boolean; attempts: number };
+
 export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Bindings> {
 	private prisma: PrismaClient<{ adapter: PrismaD1 }>;
 	public client: Client | null = null;
@@ -50,7 +54,6 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 
 	async enqueue(...[binding, payload, params]: EnqueueArgs<T>) {
 		assert(typeof binding === 'string');
-		console.log('Enqueuing a job', binding, payload, params);
 		const res = await this.prisma.job.create({
 			data: { binding, payload: JSON.stringify(payload), params: JSON.stringify(params) },
 		});
@@ -109,12 +112,12 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 
 				const target = await this.prisma.job.findUnique({ where: { id: msg.body.id } });
 				if (!target) {
-					console.log('Job not found', msg.body.id);
+					console.warn('Job not found', msg.body.id);
 					msg.ack();
 					return;
 				}
 				if (![jobStatus.pending, jobStatus.retryPending].includes(target.status)) {
-					console.log('Job is not pending or retry pending', msg.body.id);
+					console.warn('Job is not pending or retry pending', msg.body.id);
 					msg.ack();
 					return;
 				}
@@ -130,14 +133,16 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 				});
 				const results: Result[] = JSON.parse(job.result || '[]');
 				const attempts = job.attempts;
+				const bindingName = msg.body.binding;
+				const payload = JSON.parse(msg.body.payload);
 
 				const data: Prisma.JobUpdateInput = {};
 
 				try {
-					console.log('Processing job', msg.body.id);
-					const service = this.env[msg.body.binding];
-					if (!service) throw new Error(`Service not found: ${msg.body.binding}`);
-					await service.perform(JSON.parse(msg.body.payload));
+					const service = this.env[bindingName];
+					if (!service) throw new Error(`Service Binding not found: ${bindingName}`);
+					// @ts-ignore
+					const result = await service.perform(payload);
 
 					const completedAt = new Date();
 					data.status = jobStatus.completed;
@@ -153,7 +158,11 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 					});
 					data.result = JSON.stringify(results);
 
-					console.log('Completed job', msg.body.id);
+					await this.onSuccess?.(bindingName, payload, result, {
+						startedAt,
+						finishedAt: completedAt,
+						attempts,
+					})?.catch((err) => console.error(err));
 				} catch (err) {
 					const retryable = attempts < (params.maxRetries ?? 3);
 					const finishedAt = new Date();
@@ -168,7 +177,12 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 					});
 					data.result = JSON.stringify(results);
 
-					console.log('Failed job', msg.body.id);
+					await this.onFailure?.(bindingName, payload, err, {
+						startedAt,
+						finishedAt,
+						isFinal: !retryable,
+						attempts,
+					})?.catch(console.error);
 				} finally {
 					await this.prisma.job.update({
 						where: { id: msg.body.id },
@@ -184,7 +198,6 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 									: params.retryDelay;
 						// MEMO: do not work delaySeconds on dev environment
 						msg.retry({ delaySeconds });
-						console.log('Retrying job', msg.body.id);
 					} else {
 						msg.ack();
 					}
@@ -194,4 +207,8 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 
 		batch.ackAll();
 	}
+
+	onSuccess?(binding: string, payload: any, result: any, meta: SuccessHandlerMeta): Promise<void> | void;
+
+	onFailure?(binding: string, payload: any, error: any, meta: FailureHandlerMeta): Promise<void> | void;
 }

@@ -71,15 +71,90 @@ The `perform` method has the following signature:
 
 ```typescript
 interface KiribiPerformer extends WorkerEntrypoint {
-  perform(payload: any): void | Promise<void>;
+  perform(payload: any): any | Promise<any>;
 }
 ```
 
 - `payload`(Required): The payload of the job.
-  - The payload is the same as the one passed to the `enqueue` method.
+  - The payload is the same as the one passed to the `enqueue` method's second argument.
   - The payload can be any **json serializable** type.
 
 If thrown an error in the `perform` method, the job is retried according to the `maxRetries` and `retryDelay` set in the `enqueue` method.
+
+The return value of the `perform` is passed to the `onSuccess` method of `Kiribi`.
+
+
+## Hooks on failure and success
+
+You can add hooks to Kiribi Worker to execute a function when a job fails or succeeds.
+
+```typescript
+import { Kiribi, SuccessHandlerMeta, FailureHandlerMeta } from 'kiribi'
+
+export default class extends Kiribi {
+  async onSucces(binding: string, payload: any, result: any, meta: SuccessHandlerMeta) {
+    // Do something when the job succeeds
+    console.log('onSuccess', binding, payload, result, meta)
+  }
+
+  async onFailure(binding: string, payload: any, error: any, meta: FailureHandlerMeta) {
+    // Do something when the job fails
+    console.log('onFailure', binding, payload, error, meta)
+  }
+}
+```
+
+### `onSuccess` method
+
+The `onSuccess` method has the following signature:
+
+```typescript
+interface KiribiSuccessHandler {
+  onSuccess(binding: string, payload: any, result: any, meta: SuccessHandlerMeta): void | Promise<void>;
+}
+
+interface SuccessHandlerMeta {
+  startedAt: Date;
+  finishedAt: Date;
+  attempts: number;
+}
+```
+
+- `binding`: The name of the job worker.
+- `payload`: The payload of the job.
+- `result`: The result of the job. The result is the return value of the `perform` method.
+- `meta`: The metadata of the job.
+  - `startedAt`: The time the job started.
+  - `finishedAt`: The time the job finished.
+  - `attempts`: The number of attempts the job took to complete.
+
+### `onFailure` method
+
+The `onFailure` method has the following signature:
+
+```typescript
+interface KiribiFailureHandler {
+  onFailure(binding: string, payload: any, error: any, meta: FailureHandlerMeta): void | Promise<void>;
+}
+
+interface FailureHandlerMeta {
+  startedAt: Date;
+  finishedAt: Date;
+  attempts: number;
+  isFinal: boolean
+}
+```
+
+- `binding`: The name of the job worker.
+- `payload`: The payload of the job.
+- `error`: The error of the job. The error is the error thrown in the `perform` method.
+- `meta`: The metadata of the job.
+  - `startedAt`: The time the job started.
+  - `finishedAt`: The time the job finished.
+  - `attempts`: The number of attempts the job took to complete.
+  - `isFinal`: Whether the job has reached the maximum number of retries.
+
+`onFailure` is called when the job fails, and `isFinal` is `true` when the job has reached the maximum number of retries.
 
 ## Tips
 
