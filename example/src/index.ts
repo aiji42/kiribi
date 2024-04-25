@@ -6,9 +6,15 @@ import { rest } from 'kiribi/rest';
 export default class extends Kiribi {
 	client = client;
 	rest = rest;
-	async scheduled() {
-		// delete jobs older than 10 minutes
-		await this.sweep({ createdAtLt: new Date(Date.now() - 1000 * 60 * 10), statusIn: '*' });
+	async scheduled(controller: ScheduledController) {
+		// every 1 hour
+		if (controller.cron === '0 * * * *') {
+			// delete jobs older than 10 minutes
+			await this.sweep({ olderThan: 1000 * 60 * 10, statuses: '*' });
+		}
+
+		// every 5 minutes
+		if (controller.cron === '*/5 * * * *') await this.recover();
 	}
 	async onSuccess(binding: string, payload: any, result: any, meta: SuccessHandlerMeta) {
 		console.log(result);

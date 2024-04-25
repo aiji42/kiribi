@@ -218,3 +218,76 @@ export default {
   }
 }
 ```
+
+### Sweep old jobs
+
+You can sweep jobs by calling the `sweep` method of `Kiribi` with Cloudflare Worker's [cron trigger](https://developers.cloudflare.com/workers/configuration/cron-triggers/).
+
+```typescript
+import { Kiribi } from 'kiribi'
+
+export default class extends Kiribi {
+  async schedule() {
+    // Sweep jobs older than 1 week with statuses COMPLETED, CANCELLED
+    await this.sweep() // [!code highlight]
+
+    // Sweep jobs older than 2 weeks with status FAILED
+    await this.sweep({ olderThan: 1000 * 60 * 60 * 24 * 14, statuses: ['FAILED'] }) // [!code highlight]
+
+    // Sweep all jobs older than 1 month
+    await this.sweep({ olderThan: 1000 * 60 * 60 * 24 * 30, statuses: '*' }) // [!code highlight]
+  }
+}
+```
+
+```toml
+# wrangler.toml
+name = "my-kiribi"
+# ...
+
+# Schedule the sweep job every day at 0:00
+[[triggers]]
+crons = [ "0 0 * * *" ]
+```
+
+### Recover jobs when the queue is unstable
+
+Cloudflare Queue occasionally becomes unstable, and jobs may be lost. In such cases, you can re-enqueue the job by calling the `recover` method of `Kiribi`.
+
+Use in conjunction with the [cron trigger](https://developers.cloudflare.com/workers/configuration/cron-triggers/).
+
+```typescript
+import { Kiribi } from 'kiribi'
+
+export default class extends Kiribi {
+  async schedule() {
+    await this.recover() // [!code highlight]
+  }
+}
+```
+
+```toml
+# wrangler.toml
+name = "my-kiribi"
+# ...
+
+# Schedule the recover job every 5 minutes
+[[triggers]]
+crons = [ "*/5 * * * *" ]
+```
+
+:::info
+When using a combination of cron triggers with different frequencies:
+
+```typescript
+import { Kiribi } from 'kiribi'
+
+export default class extends Kiribi {
+  async schedule({ cron }) {
+    if (cron === '0 0 * * *') await this.sweep() // [!code highlight]
+
+    if (cron === '*/5 * * * *') await this.recover() // [!code highlight]
+  }
+}
+```
+:::

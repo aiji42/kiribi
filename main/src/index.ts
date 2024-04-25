@@ -19,6 +19,8 @@ const jobStatus = {
 	cancelled: 'CANCELLED',
 };
 
+type Status = (typeof jobStatus)[keyof typeof jobStatus];
+
 type Performers = {
 	[binding: string]: KiribiPerformer;
 };
@@ -60,6 +62,25 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 		return this.env.KIRIBI_QUEUE.send(res, { delaySeconds: params?.firstDelay });
 	}
 
+	async recover(id?: string) {
+		if (id) {
+			const res = await this.prisma.job.findUniqueOrThrow({ where: { id } });
+			if (!maybeDead(res)) throw new Error('Job is not dead');
+
+			return this.env.KIRIBI_QUEUE.send(res);
+		}
+
+		const deadJobs = await this.findDeadJobs();
+		return Promise.allSettled(deadJobs.map((job) => this.env.KIRIBI_QUEUE.send(job)));
+	}
+
+	async findDeadJobs() {
+		const jobs = await this.prisma.job.findMany({
+			where: { status: { in: [jobStatus.pending, jobStatus.retryPending] }, createdAt: { lt: new Date(Date.now() - 60000) } },
+		});
+		return jobs.filter(maybeDead);
+	}
+
 	async delete(id: string) {
 		await this.prisma.job.delete({ where: { id } });
 	}
@@ -84,15 +105,15 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 		return this.prisma.job.count(...query);
 	}
 
-	async sweep(query?: { createdAtLt?: Date | string; statusIn?: string[] | '*' }) {
-		// default: 7 days ago
-		const createdAtLt = query?.createdAtLt ?? new Date(Date.now() - 1000 * 60 * 60 * 24 * 7);
-		const statusIn = query?.statusIn ?? [jobStatus.completed, jobStatus.failed, jobStatus.cancelled];
-
+	// default: 7 days ago with statuses completed and cancelled
+	async sweep({
+		olderThan = 7 * 24 * 60 * 60 * 1000,
+		statuses = [jobStatus.completed, jobStatus.cancelled],
+	}: { olderThan?: Date | number; statuses?: Status[] | '*' } = {}) {
 		return this.prisma.job.deleteMany({
 			where: {
-				createdAt: { lt: createdAtLt },
-				status: statusIn === '*' ? undefined : { in: statusIn },
+				createdAt: { lt: typeof olderThan === 'number' ? new Date(Date.now() - olderThan) : olderThan },
+				status: statuses === '*' ? undefined : { in: statuses },
 			},
 		});
 	}
@@ -190,14 +211,8 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 					});
 
 					if (data.status === jobStatus.retryPending) {
-						const delaySeconds =
-							typeof params.retryDelay === 'object' && params.retryDelay.exponential
-								? Math.pow(Math.max(params.retryDelay.base, 2), attempts)
-								: typeof params.retryDelay === 'object'
-									? params.retryDelay.base
-									: params.retryDelay;
 						// MEMO: do not work delaySeconds on dev environment
-						msg.retry({ delaySeconds });
+						msg.retry({ delaySeconds: calcRetryDelay(params.retryDelay, attempts) });
 					} else {
 						msg.ack();
 					}
@@ -212,3 +227,32 @@ export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Binding
 
 	onFailure?(binding: string, payload: any, error: any, meta: FailureHandlerMeta): Promise<void> | void;
 }
+
+const calcRetryDelay = (retryDelay: EnqueueOptions['retryDelay'], attempts: number) => {
+	return typeof retryDelay === 'object' && retryDelay.exponential
+		? Math.pow(Math.max(retryDelay.base, 2), attempts)
+		: typeof retryDelay === 'object'
+			? retryDelay.base
+			: retryDelay;
+};
+
+const maybeDead = (job: Job) => {
+	const thresholdSec = 60;
+
+	if (![jobStatus.pending, jobStatus.retryPending].includes(job.status)) return false;
+	const { firstDelay = 0, retryDelay }: EnqueueOptions = JSON.parse(job.params || '{}');
+	if (job.status === jobStatus.pending) {
+		return Date.now() - job.createdAt.getTime() > (firstDelay + thresholdSec) * 1000;
+	}
+	if (job.status === jobStatus.retryPending) {
+		const results: Result[] = JSON.parse(job.result || '[]');
+		const delay = calcRetryDelay(retryDelay, job.attempts) ?? 0;
+		const lastFinishedAt = results[results.length - 1]?.finishedAt;
+		// unexpected case: lastFinishedAt is undefined (the job is retryPending but no result)
+		if (!lastFinishedAt) return false;
+
+		return Date.now() - lastFinishedAt > (delay + thresholdSec) * 1000;
+	}
+
+	return false;
+};

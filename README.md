@@ -13,7 +13,7 @@ See documentation at [kiribi.pages.dev](https://kiribi.pages.dev/).
     - [ ] `find`
     - [ ] `findMany`
     - [ ] `count`
-    - [ ] `sweep`
+    - [x] `sweep`
   - [ ] Update document for REST API
   - [ ] Create a logo, favicon, and feature image
   - [ ] Add example templates for `npx wrangler generate`
@@ -26,7 +26,7 @@ See documentation at [kiribi.pages.dev](https://kiribi.pages.dev/).
 - features
   - [ ] Create a script for auto initialization of the database and queue
   - [ ] Re-enqueue for a case when Queue is unstable and data is volatile
-    - [ ] Auto re-enqueue by cron trigger
+    - [x] Auto re-enqueue by cron trigger
     - [ ] Manual re-enqueue by REST API and client
   - [ ] Form validation for the client
   - [ ] Leave enqueue source information in the database

@@ -36,5 +36,6 @@ service = "example-kiribi"
 entrypoint = "FlakyJob"
 
 # initialize the database every hour
+# recover queue every 5 minutes
 [triggers]
-crons = [ "0 * * * *" ]
+crons = [ "0 * * * *", "*/5 * * * *" ]
