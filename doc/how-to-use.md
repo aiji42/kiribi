@@ -246,7 +246,7 @@ name = "my-kiribi"
 # ...
 
 # Schedule the sweep job every day at 0:00
-[[triggers]]
+[triggers]
 crons = [ "0 0 * * *" ]
 ```
 
@@ -272,7 +272,7 @@ name = "my-kiribi"
 # ...
 
 # Schedule the recover job every 5 minutes
-[[triggers]]
+[triggers]
 crons = [ "*/5 * * * *" ]
 ```
 
