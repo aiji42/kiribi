@@ -43,12 +43,12 @@ export type SuccessHandlerMeta = { startedAt: Date; finishedAt: Date; attempts: 
 
 export type FailureHandlerMeta = { startedAt: Date; finishedAt: Date; isFinal: boolean; attempts: number };
 
-export class Kiribi<T extends Performers = any> extends WorkerEntrypoint<Bindings> {
+export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> extends WorkerEntrypoint<B> {
 	private prisma: PrismaClient<{ adapter: PrismaD1 }>;
 	public client: Client | null = null;
 	public rest: Rest | null = null;
 
-	constructor(ctx: ExecutionContext, env: Bindings) {
+	constructor(ctx: ExecutionContext, env: B) {
 		super(ctx, env);
 		const adapter = new PrismaD1(env.KIRIBI_DB);
 		this.prisma = new PrismaClient({ adapter });
