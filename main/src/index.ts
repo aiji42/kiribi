@@ -25,7 +25,7 @@ type Performers = {
 	[binding: string]: KiribiPerformer;
 };
 
-type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue } & { [x: string]: Service<KiribiPerformer> };
+type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue };
 
 type Result = { status: 'success' | 'failed'; error: string | null; startedAt: number; finishedAt: number; processingTime: number };
 
@@ -160,9 +160,9 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 				const data: Prisma.JobUpdateInput = {};
 
 				try {
+					// @ts-ignore
 					const service = this.env[bindingName];
 					if (!service) throw new Error(`Service Binding not found: ${bindingName}`);
-					// @ts-ignore
 					const result = await service.perform(payload);
 
 					const completedAt = new Date();
