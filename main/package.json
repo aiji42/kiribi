@@ -33,7 +33,7 @@
       "rest": [
         "./dist/rest.d.ts"
       ],
-      "worker": [
+      "performer": [
         "./dist/performer.d.ts"
       ]
     }
