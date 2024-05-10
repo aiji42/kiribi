@@ -71,6 +71,7 @@ export class DB {
 				binding,
 				payload,
 				params,
+				createdAt: new Date(),
 				updatedAt: new Date(),
 			})
 			.returning();
