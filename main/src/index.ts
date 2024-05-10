@@ -1,39 +1,21 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
-import { PrismaD1 } from '@prisma/adapter-d1';
-import { type Job, type Prisma, PrismaClient } from '@prisma/client';
 import { Hono } from 'hono';
 import { InferPayload, type KiribiPerformer } from './performer';
 import { type Rest } from './rest';
 import { type Client } from './client';
+import { DB, EnqueueOptions, jobStatus, Job, Status } from './db';
+import { and, inArray, lt } from 'drizzle-orm';
+import { ListQuery } from './schema';
 
 function assert(condition: any): asserts condition {
 	if (!condition) throw new Error('Assertion failed');
 }
-
-const jobStatus = {
-	pending: 'PENDING',
-	processing: 'PROCESSING',
-	retryPending: 'RETRY_PENDING',
-	completed: 'COMPLETED',
-	failed: 'FAILED',
-	cancelled: 'CANCELLED',
-};
-
-type Status = (typeof jobStatus)[keyof typeof jobStatus];
 
 type Performers = {
 	[binding: string]: KiribiPerformer;
 };
 
 type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue };
-
-type Result = { status: 'success' | 'failed'; error: string | null; startedAt: number; finishedAt: number; processingTime: number };
-
-export type EnqueueOptions = {
-	maxRetries?: number;
-	retryDelay?: number | { exponential: boolean; base: number };
-	firstDelay?: number;
-};
 
 type EnqueueArgs<M extends Performers> = {
 	[K in keyof M]: [K, InferPayload<M[K]>, EnqueueOptions?];
@@ -44,27 +26,24 @@ export type SuccessHandlerMeta = { startedAt: Date; finishedAt: Date; attempts: 
 export type FailureHandlerMeta = { startedAt: Date; finishedAt: Date; isFinal: boolean; attempts: number };
 
 export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> extends WorkerEntrypoint<B> {
-	private prisma: PrismaClient<{ adapter: PrismaD1 }>;
+	private db: DB;
 	public client: Client | null = null;
 	public rest: Rest | null = null;
 
 	constructor(ctx: ExecutionContext, env: B) {
 		super(ctx, env);
-		const adapter = new PrismaD1(env.KIRIBI_DB);
-		this.prisma = new PrismaClient({ adapter });
+		this.db = new DB(env);
 	}
 
 	async enqueue(...[binding, payload, params]: EnqueueArgs<T>) {
 		assert(typeof binding === 'string');
-		const res = await this.prisma.job.create({
-			data: { binding, payload: JSON.stringify(payload), params: JSON.stringify(params) },
-		});
+		const res = await this.db.jobEnqueue(binding, payload, params);
 		return this.env.KIRIBI_QUEUE.send(res, { delaySeconds: params?.firstDelay });
 	}
 
 	async recover(id?: string) {
 		if (id) {
-			const res = await this.prisma.job.findUniqueOrThrow({ where: { id } });
+			const res = await this.db.jobFindOneOrThrow(id);
 			if (!maybeDead(res)) throw new Error('Job is not dead');
 
 			return this.env.KIRIBI_QUEUE.send(res);
@@ -75,34 +54,49 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 	}
 
 	async findDeadJobs() {
-		const jobs = await this.prisma.job.findMany({
-			where: { status: { in: [jobStatus.pending, jobStatus.retryPending] }, createdAt: { lt: new Date(Date.now() - 60000) } },
+		const jobs = await this.db.jobFindMany({
+			where: (r, { lt, and, inArray }) =>
+				and(inArray(r.status, [jobStatus.pending, jobStatus.retryPending]), lt(r.createdAt, new Date(Date.now() - 60000))),
 		});
 		return jobs.filter(maybeDead);
 	}
 
 	async delete(id: string) {
-		await this.prisma.job.delete({ where: { id } });
+		await this.db.jobDeleteOne(id);
 	}
 
 	async cancel(id: string) {
-		const target = await this.prisma.job.findUniqueOrThrow({ where: { id } });
+		const target = await this.db.jobFindOneOrThrow(id);
 		if (![jobStatus.retryPending, jobStatus.pending].includes(target.status))
 			throw new Error('Cannot cancel a job that is not pending or retry pending');
 
-		await this.prisma.job.update({ where: { id }, data: { status: jobStatus.cancelled } });
+		await this.db.jobUpdateOne(id, { status: jobStatus.cancelled });
 	}
 
 	async find(id: string) {
-		return this.prisma.job.findUniqueOrThrow({ where: { id } });
+		return this.db.jobFindOneOrThrow(id);
 	}
 
-	async findMany(...query: Parameters<typeof this.prisma.job.findMany>) {
-		return this.prisma.job.findMany(...query);
+	async findMany({ filter, sort, page }: ListQuery) {
+		return this.db.jobFindMany({
+			where: (r, { eq, inArray, and }) =>
+				and(
+					filter?.binding ? inArray(r.binding, Array.isArray(filter.binding) ? filter.binding : [filter.binding]) : undefined,
+					filter?.status ? inArray(r.status, Array.isArray(filter.status) ? filter.status : [filter.status]) : undefined,
+				),
+			orderBy: (r, { asc, desc }) => [sort ? (sort.desc ? desc(r[sort.key]) : asc(r[sort.key])) : desc(r.id), desc(r.id)],
+			offset: page ? page.index * page.size : undefined,
+			limit: page ? page.size : 100,
+		});
 	}
 
-	async count(...query: Parameters<typeof this.prisma.job.count>) {
-		return this.prisma.job.count(...query);
+	async count(filter: ListQuery['filter']) {
+		return this.db.jobCount(
+			and(
+				filter?.binding ? inArray(Job.binding, Array.isArray(filter.binding) ? filter.binding : [filter.binding]) : undefined,
+				filter?.status ? inArray(Job.status, Array.isArray(filter.status) ? filter.status : [filter.status]) : undefined,
+			),
+		);
 	}
 
 	// default: 7 days ago with statuses completed and cancelled
@@ -110,12 +104,9 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 		olderThan = 7 * 24 * 60 * 60 * 1000,
 		statuses = [jobStatus.completed, jobStatus.cancelled],
 	}: { olderThan?: Date | number; statuses?: Status[] | '*' } = {}) {
-		return this.prisma.job.deleteMany({
-			where: {
-				createdAt: { lt: typeof olderThan === 'number' ? new Date(Date.now() - olderThan) : olderThan },
-				status: statuses === '*' ? undefined : { in: statuses },
-			},
-		});
+		const createdAt = typeof olderThan === 'number' ? new Date(Date.now() - olderThan) : olderThan;
+		const query = statuses === '*' ? lt(Job.createdAt, createdAt) : and(lt(Job.createdAt, createdAt), inArray(Job.status, statuses));
+		return this.db.jobDeleteMany(query);
 	}
 
 	async fetch(res: Request) {
@@ -129,9 +120,9 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 	async queue(batch: MessageBatch<Job>) {
 		await Promise.allSettled(
 			batch.messages.map(async (msg) => {
-				const params: EnqueueOptions = JSON.parse(msg.body.params || '{}');
+				const params: EnqueueOptions = msg.body.params ?? {};
 
-				const target = await this.prisma.job.findUnique({ where: { id: msg.body.id } });
+				const target = await this.db.jobFindOne(msg.body.id);
 				if (!target) {
 					console.warn('Job not found', msg.body.id);
 					msg.ack();
@@ -144,20 +135,17 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 				}
 
 				const startedAt = new Date();
-				const job = await this.prisma.job.update({
-					where: { id: msg.body.id },
-					data: {
-						status: jobStatus.processing,
-						startedAt,
-						attempts: { increment: 1 },
-					},
+				const job = await this.db.jobUpdateOne(msg.body.id, {
+					status: jobStatus.processing,
+					startedAt,
+					attempts: target.attempts + 1,
 				});
-				const results: Result[] = JSON.parse(job.result || '[]');
+				const results = job.result ?? [];
 				const attempts = job.attempts;
 				const bindingName = msg.body.binding;
-				const payload = JSON.parse(msg.body.payload);
+				const payload = msg.body.payload;
 
-				const data: Prisma.JobUpdateInput = {};
+				const data: Partial<Job> = {};
 
 				try {
 					// @ts-ignore
@@ -177,7 +165,7 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 						finishedAt: completedAt.getTime(),
 						processingTime: data.processingTime,
 					});
-					data.result = JSON.stringify(results);
+					data.result = results;
 
 					await this.onSuccess?.(bindingName, payload, result, {
 						startedAt,
@@ -196,7 +184,7 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 						finishedAt: finishedAt.getTime(),
 						processingTime: finishedAt.getTime() - startedAt.getTime(),
 					});
-					data.result = JSON.stringify(results);
+					data.result = results;
 
 					await this.onFailure?.(bindingName, payload, err, {
 						startedAt,
@@ -205,10 +193,7 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 						attempts,
 					})?.catch(console.error);
 				} finally {
-					await this.prisma.job.update({
-						where: { id: msg.body.id },
-						data,
-					});
+					await this.db.jobUpdateOne(msg.body.id, data);
 
 					if (data.status === jobStatus.retryPending) {
 						// MEMO: do not work delaySeconds on dev environment
@@ -240,12 +225,12 @@ const maybeDead = (job: Job) => {
 	const thresholdSec = 60;
 
 	if (![jobStatus.pending, jobStatus.retryPending].includes(job.status)) return false;
-	const { firstDelay = 0, retryDelay }: EnqueueOptions = JSON.parse(job.params || '{}');
+	const { firstDelay = 0, retryDelay }: EnqueueOptions = job.params ?? {};
 	if (job.status === jobStatus.pending) {
 		return Date.now() - job.createdAt.getTime() > (firstDelay + thresholdSec) * 1000;
 	}
 	if (job.status === jobStatus.retryPending) {
-		const results: Result[] = JSON.parse(job.result || '[]');
+		const results = job.result ?? [];
 		const delay = calcRetryDelay(retryDelay, job.attempts) ?? 0;
 		const lastFinishedAt = results[results.length - 1]?.finishedAt;
 		// unexpected case: lastFinishedAt is undefined (the job is retryPending but no result)

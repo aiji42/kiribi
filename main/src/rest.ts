@@ -3,71 +3,19 @@ import { HTTPException } from 'hono/http-exception';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { type Kiribi } from './index';
+import { listQuery } from './schema';
 
 type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue; KIRIBI: Service<Kiribi> };
 
 const app = new Hono<{ Bindings: Bindings }>().basePath('/api');
 
-app.post(
-	'/jobs',
-	zValidator(
-		'json',
-		z.object({
-			filter: z
-				.object({
-					binding: z.union([z.string(), z.array(z.string())]).optional(),
-					status: z.union([z.string(), z.array(z.string())]).optional(),
-				})
-				.optional(),
-			sort: z
-				.object({
-					key: z.string(),
-					desc: z.boolean(),
-				})
-				.optional(),
-			page: z
-				.object({
-					index: z.number(),
-					size: z.number(),
-				})
-				.optional(),
-		}),
-	),
-	async (c) => {
-		const { filter, sort, page } = c.req.valid('json');
+app.post('/jobs', zValidator('json', listQuery), async (c) => {
+	const { filter, sort, page } = c.req.valid('json');
+	const totalCount = await c.env.KIRIBI.count(filter);
+	using results = await c.env.KIRIBI.findMany({ filter, sort, page });
 
-		const totalCount = await c.env.KIRIBI.count({
-			where: {
-				binding: filter?.binding ? { in: Array.isArray(filter.binding) ? filter.binding : [filter.binding] } : undefined,
-				status: filter?.status ? { in: Array.isArray(filter.status) ? filter.status : [filter.status] } : undefined,
-			},
-		});
-
-		using results = await c.env.KIRIBI.findMany({
-			select: {
-				id: true,
-				binding: true,
-				status: true,
-				createdAt: true,
-				startedAt: true,
-				finishedAt: true,
-				completedAt: true,
-				processingTime: true,
-				attempts: true,
-				result: true,
-			},
-			where: {
-				binding: filter?.binding ? { in: Array.isArray(filter.binding) ? filter.binding : [filter.binding] } : undefined,
-				status: filter?.status ? { in: Array.isArray(filter.status) ? filter.status : [filter.status] } : undefined,
-			},
-			orderBy: [sort ? { [sort.key]: sort.desc ? 'desc' : 'asc' } : { id: 'desc' }, { id: 'desc' }],
-			skip: page ? page.index * page.size : undefined,
-			take: page ? page.size : 100,
-		});
-
-		return c.json({ results, totalCount });
-	},
-);
+	return c.json({ results, totalCount });
+});
 
 app.get('/jobs/:id', async (c) => {
 	const id = c.req.param('id');

@@ -19,11 +19,10 @@ You will be asked for the project name, so feel free to set it as you like.
 npm create cloudflare@latest -- --ts --type=hello-world
 ```
 
-Install `kiribi` and `prisma` in the directory of the created project.
+Install `kiribi` in the directory of the created project.
 
 ```bash
-npm install -D prisma
-npm install kiribi prisma
+npm install kiribi
 ```
 
 Create a D1 database and a queue for Kiribi.<br>

@@ -7,7 +7,6 @@ See documentation at [kiribi.pages.dev](https://kiribi.pages.dev/).
 ## Getting Started
 
 ```bash
-npm install -D prisma
 npm install kiribi
 ```
 

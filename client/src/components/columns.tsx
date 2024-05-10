@@ -3,10 +3,10 @@ import { DataTableColumnHeader } from './data-table-column-header';
 import { DataTableRowActions } from './data-table-row-actions';
 import { statuses, subStatuses } from '@/data/data';
 import { cn } from '@/lib/utils';
-import { Job } from '@prisma/client';
 import { ChevronRightIcon } from '@radix-ui/react-icons';
 import { Button } from '@/components/ui/button.tsx';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { type Job } from '../../../main/src/db';
 
 const DateTime = ({ value }: { value: string | null | undefined }) => {
 	return (

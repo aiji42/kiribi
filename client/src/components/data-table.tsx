@@ -43,11 +43,12 @@ export function DataTable() {
 		},
 		manualPagination: true,
 		onExpandedChange: setExpanded,
+		// @ts-ignore
 		getSubRows: (row) => {
-			const results = JSON.parse(row.result ?? '[]');
+			const results = row.result ?? [];
 			return results.filter((r: { status: string }) => r.status === 'failed');
 		},
-		pageCount: Math.ceil(data?.totalCount / pageSize),
+		pageCount: Math.ceil(data?.totalCount ?? 0 / pageSize),
 		onSortingChange: setSorting,
 		onColumnFiltersChange: (fn) => {
 			setPageIndex(0);

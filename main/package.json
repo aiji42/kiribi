@@ -43,32 +43,27 @@
   "files": [
     "dist",
     "client",
-    "migrations",
-    "schema.prisma"
+    "migrations"
   ],
   "scripts": {
     "build": "unbuild",
     "dev": "npx wrangler dev --port 9001",
     "tail": "npx wrangler tail",
-    "postinstall": "prisma generate",
     "prepare:client": "yarn workspace client build && cp -R ../client/dist/* ./client",
     "prepack": "yarn build && yarn run prepare:client",
     "deploy": "yarn run prepare:client && npx wrangler deploy"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240405.0",
-    "prisma": "^5.12.1",
+    "@cloudflare/workers-types": "^4.20240502.0",
+    "drizzle-kit": "^0.21.0",
     "unbuild": "^2.0.0",
     "wrangler": "^0.0.0-d27c287a"
   },
-  "peerDependencies": {
-    "prisma": "*"
-  },
   "dependencies": {
     "@hono/zod-validator": "^0.2.1",
-    "@prisma/adapter-d1": "^5.12.1",
-    "@prisma/client": "^5.12.1",
-    "hono": "^4.2.4",
-    "zod": "^3.22.4"
+    "@paralleldrive/cuid2": "^2.2.2",
+    "drizzle-orm": "^0.30.10",
+    "hono": "^4.3.4",
+    "zod": "^3.23.8"
   }
 }

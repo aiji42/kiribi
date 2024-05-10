@@ -24,14 +24,6 @@ npx wrangler d1 migrations apply kiribi-db --local
 npx wrangler d1 migrations apply kiribi-db --remote
 ```
 
-## Create Migration File
-
-In `./main` directory.
-
-```bash
-npx prisma migrate diff --from-local-d1 --to-schema-datamodel=./schema.prisma --script -o ./migrations/__INPUT_NEW_MIGRATION_FILE_NAME__.sql
-```
-
 ## Publish library
 
 ```bash

@@ -14,6 +14,10 @@ export default class extends Kiribi {
 		console.log('onFail', binding, payload, meta);
 		console.log(error);
 	}
+
+	async scheduled() {
+		await this.sweep({ olderThan: 1000, statuses: '*' });
+	}
 }
 
 // you can split this class into another worker

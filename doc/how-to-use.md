@@ -227,7 +227,7 @@ You can sweep jobs by calling the `sweep` method of `Kiribi` with Cloudflare Wor
 import { Kiribi } from 'kiribi'
 
 export default class extends Kiribi {
-  async schedule() {
+  async scheduled() {
     // Sweep jobs older than 1 week with statuses COMPLETED, CANCELLED
     await this.sweep() // [!code highlight]
 
@@ -260,7 +260,7 @@ Use in conjunction with the [cron trigger](https://developers.cloudflare.com/wor
 import { Kiribi } from 'kiribi'
 
 export default class extends Kiribi {
-  async schedule() {
+  async scheduled() {
     await this.recover() // [!code highlight]
   }
 }
@@ -283,7 +283,7 @@ When using a combination of cron triggers with different frequencies:
 import { Kiribi } from 'kiribi'
 
 export default class extends Kiribi {
-  async schedule({ cron }) {
+  async scheduled({ cron }) {
     if (cron === '0 0 * * *') await this.sweep() // [!code highlight]
 
     if (cron === '*/5 * * * *') await this.recover() // [!code highlight]
