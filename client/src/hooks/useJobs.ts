@@ -1,7 +1,7 @@
 import { ColumnFiltersState, PaginationState, SortingState } from '@tanstack/react-table';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
-import { type Job } from '../../../main/src/db';
+import { Job } from '@/types.ts';
 
 export type UseJobsArgs = {
 	sorting: SortingState;

@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 import { ChevronRightIcon } from '@radix-ui/react-icons';
 import { Button } from '@/components/ui/button.tsx';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
-import { type Job } from '../../../main/src/db';
 import { Checkbox } from '@/components/ui/checkbox.tsx';
+import { Job } from '@/types.ts';
 
 const DateTime = ({ value }: { value: string | null | undefined }) => {
 	return (
@@ -82,7 +82,6 @@ export const columns: ColumnDef<Job>[] = [
 								{status.icon && <status.icon className={cn('mr-2 h-4 w-4', status.color)} />}
 								<span>{status.label}</span>
 							</HoverCardTrigger>
-							{/* @ts-ignore */}
 							<HoverCardContent>{row.original.error}</HoverCardContent>
 						</HoverCard>
 					</div>

@@ -15,7 +15,7 @@ import {
 import { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs.ts';
 import { NewJobDialog } from '@/components/new-job-dialog.tsx';
-import { type Job } from '../../../main/src/db';
+import { Job } from '@/types.ts';
 
 interface DataTableRowActionsProps<TData extends Job> {
 	row: Row<TData>;
