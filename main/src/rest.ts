@@ -12,14 +12,14 @@ const app = new Hono<{ Bindings: Bindings }>().basePath('/api');
 app.post('/jobs', zValidator('json', listQuery), async (c) => {
 	const { filter, sort, page } = c.req.valid('json');
 	const totalCount = await c.env.KIRIBI.count(filter);
-	using results = await c.env.KIRIBI.findMany({ filter, sort, page });
+	const results = await c.env.KIRIBI.findMany({ filter, sort, page });
 
 	return c.json({ results, totalCount });
 });
 
 app.get('/jobs/:id', async (c) => {
 	const id = c.req.param('id');
-	using job = await c.env.KIRIBI.find(id);
+	const job = await c.env.KIRIBI.find(id);
 
 	if (!job) throw new HTTPException(404, { message: 'Job not found' });
 

@@ -54,16 +54,16 @@
     "deploy": "yarn run prepare:client && npx wrangler deploy"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240502.0",
-    "drizzle-kit": "^0.21.0",
+    "@cloudflare/workers-types": "^4.20241205.0",
+    "drizzle-kit": "^0.30.0",
     "unbuild": "^2.0.0",
-    "wrangler": "^0.0.0-d27c287a"
+    "wrangler": "^3.94.0"
   },
   "dependencies": {
-    "@hono/zod-validator": "^0.2.1",
+    "@hono/zod-validator": "^0.4.1",
     "@paralleldrive/cuid2": "^2.2.2",
-    "drizzle-orm": "^0.30.10",
-    "hono": "^4.3.4",
+    "drizzle-orm": "^0.38.0",
+    "hono": "^4.6.13",
     "zod": "^3.23.8"
   }
 }
