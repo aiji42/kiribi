@@ -98,5 +98,3 @@ app.post(
 );
 
 export const rest = app;
-
-export type Rest = typeof app;

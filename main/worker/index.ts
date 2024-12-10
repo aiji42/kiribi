@@ -6,6 +6,8 @@ import { rest } from '../src/rest';
 export default class extends Kiribi {
 	client = client;
 	rest = rest;
+	defaultMaxRetries = 1;
+
 	async onSuccess(binding: string, payload: any, result: any, meta: SuccessHandlerMeta) {
 		console.log(result);
 		console.log('onSuccess', binding, payload, meta);

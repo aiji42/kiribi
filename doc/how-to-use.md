@@ -43,12 +43,23 @@ type EnqueueOptions = {
 - `options`(Optional): The options for enqueuing the job.
   - `maxRetries`(Optional): The maximum number of retries when the job fails. The default value is 3.
     - The job is retried one less than the number of `maxRetries` when it fails. (e.g., If `maxRetries` is 5, the job is retried 4 times.)
-    - The value cannot be set higher than the `max_retries` set in `[[queues.consumers]]` of Kiribi Worker's `wrangler.toml`.
+    - **The value cannot be set higher than the `max_retries` set in `[[queues.consumers]]` of Kiribi Worker's `wrangler.toml`.**
   - `firstDelay`(Optional): The delay seconds before the first processing. The default value is 0.
     - Due to the characteristics of the queue, please note that there may be a few seconds of delay even if set to 0.
   - `retryDelay`(Optional): The delay seconds before the next retry. The default value is 0.
     - If `number`, the delay is fixed every time.
     - If `{ exponential: true, base: number }`, the delay is increased exponentially every time. The delay is calculated as `base^retryCount`.
+
+:::info
+The default value of `maxRetries` is set in Kiribi Worker's `defaultMaxRetries` property and can be changed.
+```typescript
+import { Kiribi } from 'kiribi'
+
+export default class extends Kiribi {
+  defaultMaxRetries = 1 // [!code highlight]
+}
+```
+:::
 
 ## Perform Job
 

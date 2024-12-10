@@ -1,8 +1,6 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 import { Hono } from 'hono';
 import { InferPayload, type KiribiPerformer } from './performer';
-import { type Rest } from './rest';
-import { type Client } from './client';
 import { DB, EnqueueOptions, jobStatus, Job, Status } from './db';
 import { and, inArray, lt } from 'drizzle-orm';
 import { ListQuery } from './schema';
@@ -27,8 +25,9 @@ export type FailureHandlerMeta = { startedAt: Date; finishedAt: Date; isFinal: b
 
 export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> extends WorkerEntrypoint<B> {
 	private db: DB;
-	public client: Client | null = null;
-	public rest: Rest | null = null;
+	public client: any | null = null;
+	public rest: any | null = null;
+	public defaultMaxRetries: number = 3;
 
 	constructor(ctx: ExecutionContext, env: B) {
 		super(ctx, env);
@@ -177,7 +176,7 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 						attempts,
 					})?.catch((err) => console.error(err));
 				} catch (err) {
-					const retryable = attempts < (params.maxRetries ?? 3);
+					const retryable = attempts < (params.maxRetries ?? this.defaultMaxRetries);
 					const finishedAt = new Date();
 					data.status = retryable ? jobStatus.retryPending : jobStatus.failed;
 					data.finishedAt = finishedAt;
