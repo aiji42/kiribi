@@ -14,15 +14,18 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs.ts';
+import { NewJobDialog } from '@/components/new-job-dialog.tsx';
+import { type Job } from '../../../main/src/db';
 
-interface DataTableRowActionsProps<TData extends { id: string }> {
+interface DataTableRowActionsProps<TData extends Job> {
 	row: Row<TData>;
 	table: Table<TData>;
 }
 
-export function DataTableRowActions<TData extends { id: string }>({ row, table }: DataTableRowActionsProps<TData>) {
+export function DataTableRowActions<TData extends Job>({ row, table }: DataTableRowActionsProps<TData>) {
 	const [openDelete, onOpenChangeDelete] = useState(false);
 	const [openCancel, onOpenChangeCancel] = useState(false);
+	const [openCopy, onOpenChangeCopy] = useState(false);
 	const { deleteJob, cancel } = useJobs({
 		sorting: table.getState().sorting,
 		columnFilters: table.getState().columnFilters,
@@ -43,10 +46,24 @@ export function DataTableRowActions<TData extends { id: string }>({ row, table }
 					{['PENDING', 'RETRY_PENDING'].includes(row.getValue('status')) && (
 						<DropdownMenuItem onClick={() => onOpenChangeCancel(true)}>Cancel</DropdownMenuItem>
 					)}
+					<DropdownMenuItem onClick={() => onOpenChangeCopy(true)}>Duplicate</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 			<DeleteRowDialog deleteJob={() => deleteJob(row.original.id)} open={openDelete} onOpenChange={onOpenChangeDelete} />
 			<CancelRowDialog cancel={() => cancel(row.original.id)} open={openCancel} onOpenChange={onOpenChangeCancel} />
+			<NewJobDialog
+				table={table}
+				open={openCopy}
+				onOpenChange={onOpenChangeCopy}
+				initialData={{
+					binding: row.original.binding,
+					payload: JSON.stringify(row.original.payload, null, 2),
+					maxRetries: row.original.params?.maxRetries,
+					retryDelay:
+						typeof row.original.params?.retryDelay === 'object' ? row.original.params?.retryDelay.base : row.original.params?.retryDelay,
+					exponential: typeof row.original.params?.retryDelay === 'object' ? row.original.params?.retryDelay.exponential : false,
+				}}
+			/>
 		</>
 	);
 }

@@ -1,10 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { PlusIcon } from '@radix-ui/react-icons';
 import { Textarea } from '@/components/ui/textarea.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.tsx';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import { useJobs } from '@/hooks/useJobs.ts';
 import { Table } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input.tsx';
@@ -48,30 +47,44 @@ type Action =
 const initialState: Values = {
 	binding: '',
 	payload: '',
-	maxRetries: 3,
+	maxRetries: 1,
 	exponential: false,
 	retryDelay: 0,
 };
 
-export function NewJobDialog<TData>({ table }: { table: Table<TData> }) {
-	const [open, setOpen] = useState(false);
+export function NewJobDialog<TData>({
+	table,
+	initialData,
+	trigger,
+	open,
+	onOpenChange,
+}: {
+	table: Table<TData>;
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	initialData?: Partial<Values>;
+	trigger?: React.ReactNode;
+}) {
 	const { data } = useAvailableBindings(open);
-	const [values, dispatch] = useReducer((s: Values, a: Action) => {
-		switch (a.type) {
-			case 'binding':
-				return { ...s, binding: a.value };
-			case 'payload':
-				return { ...s, payload: a.value };
-			case 'maxRetries':
-				return { ...s, maxRetries: a.value };
-			case 'exponential':
-				return { ...s, exponential: a.value };
-			case 'retryDelay':
-				return { ...s, retryDelay: a.value };
-			default:
-				return initialState;
-		}
-	}, initialState);
+	const [values, dispatch] = useReducer(
+		(s: Values, a: Action) => {
+			switch (a.type) {
+				case 'binding':
+					return { ...s, binding: a.value };
+				case 'payload':
+					return { ...s, payload: a.value };
+				case 'maxRetries':
+					return { ...s, maxRetries: a.value };
+				case 'exponential':
+					return { ...s, exponential: a.value };
+				case 'retryDelay':
+					return { ...s, retryDelay: a.value };
+				default:
+					return initialState;
+			}
+		},
+		{ ...initialState, ...initialData },
+	);
 	const { create, createCompleted, isCreating, createStatusReset } = useJobs({
 		sorting: table.getState().sorting,
 		columnFilters: table.getState().columnFilters,
@@ -80,19 +93,15 @@ export function NewJobDialog<TData>({ table }: { table: Table<TData> }) {
 
 	useEffect(() => {
 		if (createCompleted) {
-			setOpen(false);
+			onOpenChange(false);
 			createStatusReset();
 			dispatch({ type: 'reset' });
 		}
-	}, [createCompleted, createStatusReset]);
+	}, [createCompleted, createStatusReset, onOpenChange]);
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				<Button variant="outline" size="sm" className="ml-auto h-8">
-					<PlusIcon className="mr-2 size-4" /> Job
-				</Button>
-			</DialogTrigger>
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogTrigger asChild>{trigger}</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
 					<DialogTitle>Add New Job</DialogTitle>

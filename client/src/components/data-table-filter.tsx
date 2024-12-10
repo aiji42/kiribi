@@ -52,7 +52,7 @@ export function DataTableFilter<TData, TValue>({ column, title, options }: DataT
 					)}
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="w-[200px] p-0" align="start">
+			<PopoverContent className="min-w-[200px] w-auto p-0" align="start">
 				<Command>
 					<CommandInput placeholder={title} />
 					<CommandList>
