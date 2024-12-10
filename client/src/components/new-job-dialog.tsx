@@ -80,7 +80,7 @@ export function NewJobDialog<TData>({
 				case 'retryDelay':
 					return { ...s, retryDelay: a.value };
 				default:
-					return initialState;
+					return { ...initialState, ...initialData };
 			}
 		},
 		{ ...initialState, ...initialData },

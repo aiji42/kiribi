@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {
 	ColumnFiltersState,
 	SortingState,
@@ -27,7 +26,8 @@ export function DataTable() {
 	const [sorting, setSorting] = useState<SortingState>([{ id: 'createdAt', desc: true }]);
 	const [pageSize, setPageSize] = useLocalStorage<number>('pageSize', 10);
 	const [pageIndex, setPageIndex] = useState(0);
-	const [expanded, setExpanded] = React.useState<ExpandedState>({});
+	const [expanded, setExpanded] = useState<ExpandedState>({});
+	const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
 
 	const { data, isLoading } = useJobs({ sorting, pagination: { pageSize, pageIndex }, columnFilters });
 
@@ -40,7 +40,9 @@ export function DataTable() {
 			columnFilters,
 			pagination: { pageSize, pageIndex },
 			expanded,
+			rowSelection,
 		},
+		getRowId: (row) => row.id,
 		manualPagination: true,
 		onExpandedChange: setExpanded,
 		// @ts-ignore
@@ -64,6 +66,8 @@ export function DataTable() {
 		},
 		getCoreRowModel: getCoreRowModel(),
 		getExpandedRowModel: getExpandedRowModel(),
+		enableRowSelection: true,
+		onRowSelectionChange: setRowSelection,
 	});
 
 	return (

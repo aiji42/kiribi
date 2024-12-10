@@ -7,6 +7,7 @@ import { ChevronRightIcon } from '@radix-ui/react-icons';
 import { Button } from '@/components/ui/button.tsx';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { type Job } from '../../../main/src/db';
+import { Checkbox } from '@/components/ui/checkbox.tsx';
 
 const DateTime = ({ value }: { value: string | null | undefined }) => {
 	return (
@@ -17,6 +18,29 @@ const DateTime = ({ value }: { value: string | null | undefined }) => {
 };
 
 export const columns: ColumnDef<Job>[] = [
+	{
+		id: 'select',
+		header: ({ table }) => (
+			<Checkbox
+				{...{
+					checked: table.getIsAllRowsSelected(),
+					onCheckedChange: (v) => table.toggleAllRowsSelected(!!v),
+				}}
+			/>
+		),
+		cell: ({ row }) => {
+			if (row.depth > 0) return null;
+			return (
+				<Checkbox
+					{...{
+						checked: row.getIsSelected(),
+						disabled: !row.getCanSelect(),
+						onCheckedChange: (v) => row.toggleSelected(!!v),
+					}}
+				/>
+			);
+		},
+	},
 	{
 		id: 'expand',
 		cell: ({ row }) => {

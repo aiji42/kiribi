@@ -65,6 +65,10 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 		await this.db.jobDeleteOne(id);
 	}
 
+	async deleteMany(ids: string[]) {
+		await this.db.jobDeleteMany(inArray(Job.id, ids));
+	}
+
 	async cancel(id: string) {
 		const target = await this.db.jobFindOneOrThrow(id);
 		if (![jobStatus.retryPending, jobStatus.pending].includes(target.status))

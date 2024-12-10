@@ -84,6 +84,21 @@ export const useJobs = (key: UseJobsArgs) => {
 	});
 
 	const {
+		isMutating: isDeletingMany,
+		trigger: deleteMany,
+		error: deleteManyError,
+		reset: deleteManyStatusReset,
+	} = useSWRMutation(key, async (_, { arg }: { arg: string[] }) => {
+		await fetch(`/api/jobs/delete`, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(arg),
+		});
+	});
+
+	const {
 		isMutating: isCanceling,
 		trigger: cancel,
 		error: cancelError,
@@ -111,5 +126,9 @@ export const useJobs = (key: UseJobsArgs) => {
 		cancel,
 		cancelError,
 		cancelStatusReset,
+		isDeletingMany,
+		deleteMany,
+		deleteManyError,
+		deleteManyStatusReset,
 	};
 };

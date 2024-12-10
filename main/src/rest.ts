@@ -26,6 +26,13 @@ app.get('/jobs/:id', async (c) => {
 	return c.json(job);
 });
 
+app.delete('/jobs/delete', zValidator('json', z.array(z.string()).min(1)), async (c) => {
+	const ids = c.req.valid('json');
+	await c.env.KIRIBI.deleteMany(ids);
+
+	return c.text('OK');
+});
+
 app.delete('/jobs/:id', async (c) => {
 	const id = c.req.param('id');
 	await c.env.KIRIBI.delete(id);
