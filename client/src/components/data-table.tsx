@@ -1,4 +1,14 @@
-import { ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import {
+	ColumnFiltersState,
+	SortingState,
+	VisibilityState,
+	flexRender,
+	getCoreRowModel,
+	useReactTable,
+	ExpandedState,
+	RowSelectionState,
+	getExpandedRowModel,
+} from '@tanstack/react-table';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DataTablePagination } from './data-table-pagination';
 import { DataTableToolbar } from './data-table-toolbar';
@@ -6,7 +16,8 @@ import { columns } from '@/components/columns';
 import { Spinner } from '@/components/spinner.tsx';
 import { useJobs } from '@/hooks/useJobs.ts';
 import useLocalStorage from 'use-local-storage';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
+import { JobDetailsShow } from '@/components/ui/job-details-show.tsx';
 
 export function DataTable() {
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>('visibilityState', {
@@ -17,7 +28,8 @@ export function DataTable() {
 	const [sorting, setSorting] = useState<SortingState>([{ id: 'createdAt', desc: true }]);
 	const [pageSize, setPageSize] = useLocalStorage<number>('pageSize', 10);
 	const [pageIndex, setPageIndex] = useState(0);
-	const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+	const [expanded, setExpanded] = useState<ExpandedState>({});
 
 	const { data, isLoading } = useJobs({ sorting, pagination: { pageSize, pageIndex }, columnFilters });
 
@@ -30,9 +42,11 @@ export function DataTable() {
 			columnFilters,
 			pagination: { pageSize, pageIndex },
 			rowSelection,
+			expanded,
 		},
 		getRowId: (row) => row.id,
 		manualPagination: true,
+		onExpandedChange: setExpanded,
 		pageCount: Math.ceil((data?.totalCount ?? 0) / pageSize),
 		onSortingChange: setSorting,
 		onColumnFiltersChange: (fn) => {
@@ -52,6 +66,8 @@ export function DataTable() {
 		getCoreRowModel: getCoreRowModel(),
 		enableRowSelection: true,
 		onRowSelectionChange: setRowSelection,
+		getExpandedRowModel: getExpandedRowModel(),
+		getRowCanExpand: (row) => row.original.attempts > 0 && row.original.status !== 'PROCESSING',
 	});
 
 	return (
@@ -76,11 +92,22 @@ export function DataTable() {
 					<TableBody>
 						{table.getRowModel().rows?.length ? (
 							table.getRowModel().rows.map((row) => (
-								<TableRow key={row.id}>
-									{row.getVisibleCells().map((cell) => (
-										<TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-									))}
-								</TableRow>
+								<Fragment key={row.id}>
+									<TableRow>
+										{row.getVisibleCells().map((cell) => (
+											<TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+										))}
+									</TableRow>
+									{row.getIsExpanded() && (
+										<TableRow>
+											<TableCell colSpan={row.getVisibleCells().length}>
+												<div className="max-w-screen-md">
+													<JobDetailsShow id={row.original.id} />
+												</div>
+											</TableCell>
+										</TableRow>
+									)}
+								</Fragment>
 							))
 						) : (
 							<TableRow>

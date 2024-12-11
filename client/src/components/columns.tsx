@@ -5,6 +5,8 @@ import { statuses, subStatuses } from '@/data/data';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox.tsx';
 import { Job } from '@/types.ts';
+import { Button } from '@/components/ui/button.tsx';
+import { ChevronRightIcon } from '@radix-ui/react-icons';
 
 const DateTime = ({ value }: { value: string | null | undefined }) => {
 	return (
@@ -25,9 +27,8 @@ export const columns: ColumnDef<Job>[] = [
 				}}
 			/>
 		),
-		cell: ({ row }) => {
-			if (row.depth > 0) return null;
-			return (
+		cell: ({ row }) => (
+			<div className="flex items-center gap-4">
 				<Checkbox
 					{...{
 						checked: row.getIsSelected(),
@@ -35,8 +36,13 @@ export const columns: ColumnDef<Job>[] = [
 						onCheckedChange: (v) => row.toggleSelected(!!v),
 					}}
 				/>
-			);
-		},
+				{row.getCanExpand() && (
+					<Button variant="ghost" className="size-8 p-0" onClick={row.getToggleExpandedHandler()}>
+						<ChevronRightIcon className={cn('size-4 transition-transform', row.getIsExpanded() && 'transform rotate-90')} />
+					</Button>
+				)}
+			</div>
+		),
 	},
 	{
 		accessorKey: 'binding',
