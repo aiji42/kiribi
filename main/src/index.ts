@@ -4,6 +4,8 @@ import { InferPayload, type KiribiPerformer } from './performer';
 import { DB, EnqueueOptions, jobStatus, Job, Status } from './db';
 import { and, inArray, lt } from 'drizzle-orm';
 import { ListQuery } from './schema';
+import type { client } from './client';
+import type { rest } from './rest';
 
 function assert(condition: any): asserts condition {
 	if (!condition) throw new Error('Assertion failed');
@@ -25,8 +27,8 @@ export type FailureHandlerMeta = { startedAt: Date; finishedAt: Date; isFinal: b
 
 export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> extends WorkerEntrypoint<B> {
 	private db: DB;
-	public client: any | null = null;
-	public rest: any | null = null;
+	public client: typeof client | null = null;
+	public rest: typeof rest | null = null;
 	public defaultMaxRetries: number = 3;
 
 	constructor(ctx: ExecutionContext, env: B) {

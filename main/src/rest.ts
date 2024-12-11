@@ -4,10 +4,11 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { type Kiribi } from './index';
 import { listQuery } from './schema';
+import { BlankSchema } from 'hono/types';
 
 type Bindings = { KIRIBI_DB: D1Database; KIRIBI_QUEUE: Queue; KIRIBI: Service<Kiribi> };
 
-const app = new Hono<{ Bindings: Bindings }>().basePath('/api');
+const app: Hono<{ Bindings: Bindings }, BlankSchema, '/api'> = new Hono<{ Bindings: Bindings }>().basePath('/api');
 
 app.post('/jobs', zValidator('json', listQuery), async (c) => {
 	const { filter, sort, page } = c.req.valid('json');
@@ -97,4 +98,10 @@ app.post(
 	},
 );
 
-export const rest = app;
+const rest = app;
+
+export { rest };
+
+// Workaround for ` The inferred type of 'rest' cannot be named without a reference to 'kiribi/node_modules/hono/types'. This is likely not portable. A type annotation is necessary.`
+export type { Hono } from 'hono';
+export type { BlankSchema } from 'hono/types';
