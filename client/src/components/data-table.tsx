@@ -50,7 +50,7 @@ export function DataTable() {
 			const results = row.result ?? [];
 			return results.filter((r: { status: string }) => r.status === 'failed');
 		},
-		pageCount: Math.ceil(data?.totalCount ?? 0 / pageSize),
+		pageCount: Math.ceil((data?.totalCount ?? 0) / pageSize),
 		onSortingChange: setSorting,
 		onColumnFiltersChange: (fn) => {
 			setPageIndex(0);

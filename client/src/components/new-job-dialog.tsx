@@ -52,6 +52,11 @@ const initialState: Values = {
 	retryDelay: 0,
 };
 
+const mergeData = (initialData: Partial<Values> = {}) => ({
+	...initialState,
+	...Object.fromEntries(Object.entries(initialData).filter(([, v]) => v !== undefined)),
+});
+
 export function NewJobDialog<TData>({
 	table,
 	initialData,
@@ -66,25 +71,22 @@ export function NewJobDialog<TData>({
 	trigger?: React.ReactNode;
 }) {
 	const { data } = useAvailableBindings(open);
-	const [values, dispatch] = useReducer(
-		(s: Values, a: Action) => {
-			switch (a.type) {
-				case 'binding':
-					return { ...s, binding: a.value };
-				case 'payload':
-					return { ...s, payload: a.value };
-				case 'maxRetries':
-					return { ...s, maxRetries: a.value };
-				case 'exponential':
-					return { ...s, exponential: a.value };
-				case 'retryDelay':
-					return { ...s, retryDelay: a.value };
-				default:
-					return { ...initialState, ...initialData };
-			}
-		},
-		{ ...initialState, ...initialData },
-	);
+	const [values, dispatch] = useReducer((s: Values, a: Action) => {
+		switch (a.type) {
+			case 'binding':
+				return { ...s, binding: a.value };
+			case 'payload':
+				return { ...s, payload: a.value };
+			case 'maxRetries':
+				return { ...s, maxRetries: a.value };
+			case 'exponential':
+				return { ...s, exponential: a.value };
+			case 'retryDelay':
+				return { ...s, retryDelay: a.value };
+			default:
+				return mergeData(initialData);
+		}
+	}, mergeData(initialData));
 	const { create, createCompleted, isCreating, createStatusReset } = useJobs({
 		sorting: table.getState().sorting,
 		columnFilters: table.getState().columnFilters,
@@ -112,7 +114,7 @@ export function NewJobDialog<TData>({
 							Bindings
 						</Label>
 						<Select value={values.binding} onValueChange={(value) => dispatch({ type: 'binding', value })}>
-							<SelectTrigger className="w-[180px] col-span-3" id="bindings">
+							<SelectTrigger className="col-span-3" id="bindings">
 								<SelectValue placeholder="Select a binding" />
 							</SelectTrigger>
 							<SelectContent>
