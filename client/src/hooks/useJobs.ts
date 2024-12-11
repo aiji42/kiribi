@@ -1,7 +1,7 @@
 import { ColumnFiltersState, PaginationState, SortingState } from '@tanstack/react-table';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
-import { Job } from '@/types.ts';
+import { Job, JobDetails } from '@/types';
 
 export type UseJobsArgs = {
 	sorting: SortingState;
@@ -131,4 +131,13 @@ export const useJobs = (key: UseJobsArgs) => {
 		deleteManyError,
 		deleteManyStatusReset,
 	};
+};
+
+export const useJobDetails = (id?: string) => {
+	const { data, isLoading } = useSWR<JobDetails, never, string | null>(id ? `/api/jobs/${id}` : null, async (key) => {
+		const res = await fetch(key);
+		return res.json();
+	});
+
+	return { data, isLoading };
 };

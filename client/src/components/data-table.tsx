@@ -1,13 +1,4 @@
-import {
-	ColumnFiltersState,
-	SortingState,
-	VisibilityState,
-	flexRender,
-	getCoreRowModel,
-	useReactTable,
-	ExpandedState,
-	getExpandedRowModel,
-} from '@tanstack/react-table';
+import { ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DataTablePagination } from './data-table-pagination';
 import { DataTableToolbar } from './data-table-toolbar';
@@ -26,7 +17,6 @@ export function DataTable() {
 	const [sorting, setSorting] = useState<SortingState>([{ id: 'createdAt', desc: true }]);
 	const [pageSize, setPageSize] = useLocalStorage<number>('pageSize', 10);
 	const [pageIndex, setPageIndex] = useState(0);
-	const [expanded, setExpanded] = useState<ExpandedState>({});
 	const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
 
 	const { data, isLoading } = useJobs({ sorting, pagination: { pageSize, pageIndex }, columnFilters });
@@ -39,33 +29,27 @@ export function DataTable() {
 			columnVisibility,
 			columnFilters,
 			pagination: { pageSize, pageIndex },
-			expanded,
 			rowSelection,
 		},
 		getRowId: (row) => row.id,
 		manualPagination: true,
-		onExpandedChange: setExpanded,
-		// @ts-ignore
-		getSubRows: (row) => {
-			const results = row.result ?? [];
-			return results.filter((r: { status: string }) => r.status === 'failed');
-		},
 		pageCount: Math.ceil((data?.totalCount ?? 0) / pageSize),
 		onSortingChange: setSorting,
 		onColumnFiltersChange: (fn) => {
 			setPageIndex(0);
 			setColumnFilters(fn);
 		},
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-expect-error
 		onColumnVisibilityChange: (fn) => setColumnVisibility(fn(columnVisibility)),
 		onPaginationChange: (fn) => {
-			// @ts-ignore
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-expect-error
 			const newPagination = fn({ pageIndex, pageSize });
 			setPageIndex(newPagination.pageIndex);
 			setPageSize(newPagination.pageSize);
 		},
 		getCoreRowModel: getCoreRowModel(),
-		getExpandedRowModel: getExpandedRowModel(),
 		enableRowSelection: true,
 		onRowSelectionChange: setRowSelection,
 	});

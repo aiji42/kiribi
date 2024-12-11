@@ -84,6 +84,18 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 
 	async findMany({ filter, sort, page }: ListQuery) {
 		return this.db.jobFindMany({
+			columns: {
+				id: true,
+				binding: true,
+				status: true,
+				attempts: true,
+				createdAt: true,
+				updatedAt: true,
+				startedAt: true,
+				finishedAt: true,
+				completedAt: true,
+				processingTime: true,
+			},
 			where: (r, { eq, inArray, and }) =>
 				and(
 					filter?.binding ? inArray(r.binding, Array.isArray(filter.binding) ? filter.binding : [filter.binding]) : undefined,

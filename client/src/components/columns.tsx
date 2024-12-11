@@ -3,9 +3,6 @@ import { DataTableColumnHeader } from './data-table-column-header';
 import { DataTableRowActions } from './data-table-row-actions';
 import { statuses, subStatuses } from '@/data/data';
 import { cn } from '@/lib/utils';
-import { ChevronRightIcon } from '@radix-ui/react-icons';
-import { Button } from '@/components/ui/button.tsx';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Checkbox } from '@/components/ui/checkbox.tsx';
 import { Job } from '@/types.ts';
 
@@ -42,20 +39,6 @@ export const columns: ColumnDef<Job>[] = [
 		},
 	},
 	{
-		id: 'expand',
-		cell: ({ row }) => {
-			return (
-				<div className="flex items-center">
-					{row.getCanExpand() && (
-						<Button variant="ghost" className="size-8 p-0" onClick={row.getToggleExpandedHandler()}>
-							<ChevronRightIcon className={cn('size-4 transition-transform', row.getIsExpanded() && 'transform rotate-90')} />
-						</Button>
-					)}
-				</div>
-			);
-		},
-	},
-	{
 		accessorKey: 'binding',
 		enableSorting: false,
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Binding" />,
@@ -77,13 +60,10 @@ export const columns: ColumnDef<Job>[] = [
 				if (!status) return null;
 				return (
 					<div className="w-[100px] pl-2">
-						<HoverCard>
-							<HoverCardTrigger className="flex items-center">
-								{status.icon && <status.icon className={cn('mr-2 h-4 w-4', status.color)} />}
-								<span>{status.label}</span>
-							</HoverCardTrigger>
-							<HoverCardContent>{row.original.error}</HoverCardContent>
-						</HoverCard>
+						<div className="flex items-center">
+							{status.icon && <status.icon className={cn('mr-2 h-4 w-4', status.color)} />}
+							<span>{status.label}</span>
+						</div>
 					</div>
 				);
 			}

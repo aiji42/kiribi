@@ -9,6 +9,7 @@ import { Table } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input.tsx';
 import { Checkbox } from '@/components/ui/checkbox.tsx';
 import { useAvailableBindings } from '@/hooks/useAvailableBindings.ts';
+import { JobDetails } from '@/types.ts';
 
 type Values = {
 	binding: string;
@@ -52,9 +53,15 @@ const initialState: Values = {
 	retryDelay: 0,
 };
 
-const mergeData = (initialData: Partial<Values> = {}) => ({
-	...initialState,
-	...Object.fromEntries(Object.entries(initialData).filter(([, v]) => v !== undefined)),
+const mergeData = (initialData?: JobDetails) => ({
+	binding: initialData?.binding || initialState.binding,
+	payload: initialData?.payload ? JSON.stringify(initialData.payload, null, 2) : initialState.payload,
+	maxRetries: initialData?.params?.maxRetries || initialState.maxRetries,
+	exponential: typeof initialData?.params?.retryDelay === 'object' ? initialData.params.retryDelay.exponential : initialState.exponential,
+	retryDelay:
+		typeof initialData?.params?.retryDelay === 'object'
+			? initialData.params.retryDelay.base
+			: initialData?.params?.retryDelay || initialState.retryDelay,
 });
 
 export function NewJobDialog<TData>({
@@ -67,7 +74,7 @@ export function NewJobDialog<TData>({
 	table: Table<TData>;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	initialData?: Partial<Values>;
+	initialData?: JobDetails;
 	trigger?: React.ReactNode;
 }) {
 	const { data } = useAvailableBindings(open);

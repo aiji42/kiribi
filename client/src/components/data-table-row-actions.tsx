@@ -13,7 +13,7 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
-import { useJobs } from '@/hooks/useJobs.ts';
+import { useJobDetails, useJobs } from '@/hooks/useJobs.ts';
 import { NewJobDialog } from '@/components/new-job-dialog.tsx';
 import { Job } from '@/types.ts';
 
@@ -31,6 +31,7 @@ export function DataTableRowActions<TData extends Job>({ row, table }: DataTable
 		columnFilters: table.getState().columnFilters,
 		pagination: table.getState().pagination,
 	});
+	const { data } = useJobDetails(openCopy ? row.original.id : undefined);
 
 	return (
 		<>
@@ -51,19 +52,7 @@ export function DataTableRowActions<TData extends Job>({ row, table }: DataTable
 			</DropdownMenu>
 			<DeleteRowDialog deleteJob={() => deleteJob(row.original.id)} open={openDelete} onOpenChange={onOpenChangeDelete} />
 			<CancelRowDialog cancel={() => cancel(row.original.id)} open={openCancel} onOpenChange={onOpenChangeCancel} />
-			<NewJobDialog
-				table={table}
-				open={openCopy}
-				onOpenChange={onOpenChangeCopy}
-				initialData={{
-					binding: row.original.binding,
-					payload: JSON.stringify(row.original.payload, null, 2),
-					maxRetries: row.original.params?.maxRetries,
-					retryDelay:
-						typeof row.original.params?.retryDelay === 'object' ? row.original.params?.retryDelay.base : row.original.params?.retryDelay,
-					exponential: typeof row.original.params?.retryDelay === 'object' ? row.original.params?.retryDelay.exponential : false,
-				}}
-			/>
+			{data && <NewJobDialog table={table} open={openCopy} onOpenChange={onOpenChangeCopy} initialData={data} />}
 		</>
 	);
 }
