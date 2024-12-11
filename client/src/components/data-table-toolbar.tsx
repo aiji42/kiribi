@@ -1,4 +1,4 @@
-import { Cross2Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
+import { Cross2Icon, PlusIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 import { Table } from '@tanstack/react-table';
 
 import { Button } from '@/components/ui/button';
@@ -49,13 +49,13 @@ export function DataTableToolbar<TData extends { id: string }>({ table }: DataTa
 				{table.getColumn('status') && <DataTableFilter column={table.getColumn('status')} title="Status" options={statuses} />}
 				{isFiltered && (
 					<Button variant="ghost" onClick={() => table.resetColumnFilters()} className="h-8 px-2 lg:px-3">
+						<CrossCircledIcon className="mr-2 h-4 w-4" />
 						Reset
-						<Cross2Icon className="ml-2 h-4 w-4" />
 					</Button>
 				)}
 				{!!table.getSelectedRowModel().rows.length && (
 					<Button variant="ghost" onClick={() => onOpenChangeDelete(true)} className="h-8 px-2 lg:px-3">
-						<TrashIcon className="ml-2 h-4 w-4" />
+						<Cross2Icon className="mr-2 h-4 w-4" />
 						Delete {table.getSelectedRowModel().rows.length} job(s)
 					</Button>
 				)}

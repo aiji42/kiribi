@@ -1,4 +1,4 @@
-import { DotsHorizontalIcon } from '@radix-ui/react-icons';
+import { DotsHorizontalIcon, CopyIcon, Cross2Icon, MinusCircledIcon } from '@radix-ui/react-icons';
 import { Row, Table } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -43,11 +43,20 @@ export function DataTableRowActions<TData extends Job>({ row, table }: DataTable
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-[160px]">
-					<DropdownMenuItem onClick={() => onOpenChangeDelete(true)}>Delete</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => onOpenChangeDelete(true)}>
+						<Cross2Icon className="size-4 mr-1 text-muted-foreground" />
+						Delete
+					</DropdownMenuItem>
 					{['PENDING', 'RETRY_PENDING'].includes(row.getValue('status')) && (
-						<DropdownMenuItem onClick={() => onOpenChangeCancel(true)}>Cancel</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => onOpenChangeCancel(true)}>
+							<MinusCircledIcon className="size-4 mr-1 text-muted-foreground" />
+							Cancel
+						</DropdownMenuItem>
 					)}
-					<DropdownMenuItem onClick={() => onOpenChangeCopy(true)}>Duplicate</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => onOpenChangeCopy(true)}>
+						<CopyIcon className="size-4 mr-1 text-muted-foreground" />
+						Duplicate
+					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 			<DeleteRowDialog deleteJob={() => deleteJob(row.original.id)} open={openDelete} onOpenChange={onOpenChangeDelete} />
