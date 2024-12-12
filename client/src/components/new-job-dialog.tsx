@@ -3,21 +3,13 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.tsx';
-import { useEffect, useReducer } from 'react';
-import { useJobs } from '@/hooks/useJobs.ts';
-import { Table } from '@tanstack/react-table';
+import { useCallback, useReducer } from 'react';
 import { Input } from '@/components/ui/input.tsx';
 import { Checkbox } from '@/components/ui/checkbox.tsx';
 import { useAvailableBindings } from '@/hooks/useAvailableBindings.ts';
 import { JobDetails } from '@/types.ts';
-
-type Values = {
-	binding: string;
-	payload: string;
-	maxRetries: number;
-	exponential: boolean;
-	retryDelay: number;
-};
+import { CreateJobValue, useJobCreate, ValidationError } from '@/hooks/useJobCreate.ts';
+import { cn } from '@/lib/utils.ts';
 
 type Action =
 	| {
@@ -45,7 +37,7 @@ type Action =
 			value?: never;
 	  };
 
-const initialState: Values = {
+const initialState: CreateJobValue = {
 	binding: '',
 	payload: '',
 	maxRetries: 1,
@@ -64,21 +56,22 @@ const mergeData = (initialData?: JobDetails) => ({
 			: initialData?.params?.retryDelay || initialState.retryDelay,
 });
 
-export function NewJobDialog<TData>({
-	table,
+export function NewJobDialog({
 	initialData,
 	trigger,
 	open,
 	onOpenChange,
 }: {
-	table: Table<TData>;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	initialData?: JobDetails;
 	trigger?: React.ReactNode;
 }) {
 	const { data } = useAvailableBindings(open);
-	const [values, dispatch] = useReducer((s: Values, a: Action) => {
+	const { createJob, isCreating, createError, createStatusReset } = useJobCreate();
+	const validationError = createError instanceof ValidationError ? createError : undefined;
+	const [values, dispatch] = useReducer((s: CreateJobValue, a: Action) => {
+		createStatusReset();
 		switch (a.type) {
 			case 'binding':
 				return { ...s, binding: a.value };
@@ -94,19 +87,13 @@ export function NewJobDialog<TData>({
 				return mergeData(initialData);
 		}
 	}, mergeData(initialData));
-	const { create, createCompleted, isCreating, createStatusReset } = useJobs({
-		sorting: table.getState().sorting,
-		columnFilters: table.getState().columnFilters,
-		pagination: table.getState().pagination,
-	});
 
-	useEffect(() => {
-		if (createCompleted) {
+	const submit = useCallback(() => {
+		createJob(values, () => {
 			onOpenChange(false);
-			createStatusReset();
 			dispatch({ type: 'reset' });
-		}
-	}, [createCompleted, createStatusReset, onOpenChange]);
+		});
+	}, [createJob, onOpenChange, values]);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -120,31 +107,40 @@ export function NewJobDialog<TData>({
 						<Label htmlFor="bindings" className="text-right">
 							Bindings
 						</Label>
-						<Select value={values.binding} onValueChange={(value) => dispatch({ type: 'binding', value })}>
-							<SelectTrigger className="col-span-3" id="bindings">
-								<SelectValue placeholder="Select a binding" />
-							</SelectTrigger>
-							<SelectContent>
-								{data?.map((v) => (
-									<SelectItem value={v} key={v}>
-										{v}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<div className="col-span-3">
+							<Select value={values.binding} onValueChange={(value) => dispatch({ type: 'binding', value })}>
+								<SelectTrigger className={cn(validationError?.invalid('binding') && 'border-red-600 border-2')} id="bindings">
+									<SelectValue placeholder="Select a binding" />
+								</SelectTrigger>
+								<SelectContent>
+									{data?.map((v) => (
+										<SelectItem value={v} key={v}>
+											{v}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
 					</div>
 					<div className="grid grid-cols-4 items-center gap-4">
 						<Label htmlFor="payload" className="text-right flex flex-col">
 							Payload
 							<small className="text-muted-foreground">(JSON)</small>
 						</Label>
-						<Textarea
-							id="payload"
-							className="col-span-3"
-							rows={10}
-							value={values.payload}
-							onChange={(e) => dispatch({ type: 'payload', value: e.target.value })}
-						/>
+						<div className="col-span-3">
+							<Textarea
+								id="payload"
+								className={cn(validationError?.invalid('payload') && 'border-red-600 border-2')}
+								rows={10}
+								value={values.payload}
+								onChange={(e) => dispatch({ type: 'payload', value: e.target.value })}
+							/>
+							{validationError?.getMessages('payload').map((m, i) => (
+								<p key={i} className="text-red-600 text-xs">
+									{m}
+								</p>
+							))}
+						</div>
 					</div>
 					<div className="grid grid-cols-4 items-center gap-4">
 						<Label htmlFor="maxRetries" className="text-right flex flex-col">
@@ -152,7 +148,7 @@ export function NewJobDialog<TData>({
 						</Label>
 						<Input
 							id="maxRetries"
-							className="col-span-1"
+							className={cn('col-span-1', validationError?.invalid('maxRetries') && 'border-red-600 border-2')}
 							type="text"
 							inputMode="numeric"
 							value={values.maxRetries}
@@ -166,7 +162,7 @@ export function NewJobDialog<TData>({
 						</Label>
 						<Input
 							id="retryDelay"
-							className="col-span-1"
+							className={cn('col-span-1', validationError?.invalid('retryDelay') && 'border-red-600 border-2')}
 							type="text"
 							inputMode="numeric"
 							value={values.retryDelay}
@@ -184,25 +180,7 @@ export function NewJobDialog<TData>({
 					</div>
 				</div>
 				<DialogFooter>
-					<Button
-						type="submit"
-						disabled={isCreating}
-						onClick={() => {
-							create({
-								binding: values.binding,
-								payload: values.payload,
-								params: {
-									maxRetries: values.maxRetries,
-									retryDelay: values.exponential
-										? {
-												exponential: true,
-												base: values.retryDelay,
-											}
-										: values.retryDelay,
-								},
-							});
-						}}
-					>
+					<Button type="submit" disabled={isCreating} onClick={submit}>
 						Add
 					</Button>
 				</DialogFooter>

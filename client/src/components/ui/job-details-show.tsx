@@ -1,5 +1,5 @@
-import { useJobDetails } from '@/hooks/useJobs.ts';
 import { Spinner } from '@/components/spinner.tsx';
+import { useJobDetails } from '@/hooks/useJobDetails.ts';
 
 export const JobDetailsShow = ({ id }: { id: string }) => {
 	const { data, isLoading } = useJobDetails(id);

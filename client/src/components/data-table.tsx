@@ -16,8 +16,9 @@ import { columns } from '@/components/columns';
 import { Spinner } from '@/components/spinner.tsx';
 import { useJobs } from '@/hooks/useJobs.ts';
 import useLocalStorage from 'use-local-storage';
-import { Fragment, useState } from 'react';
+import { Fragment, useMemo, useReducer, useState } from 'react';
 import { JobDetailsShow } from '@/components/ui/job-details-show.tsx';
+import { UseJobsKeyProvider } from '@/hooks/use-jobs-key-provider.tsx';
 
 export function DataTable() {
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>('visibilityState', {
@@ -30,8 +31,13 @@ export function DataTable() {
 	const [pageIndex, setPageIndex] = useState(0);
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 	const [expanded, setExpanded] = useState<ExpandedState>({});
+	const [autoRefresh, toggleAutoRefresh] = useReducer((state) => !state, true);
 
-	const { data, isLoading } = useJobs({ sorting, pagination: { pageSize, pageIndex }, columnFilters });
+	const key = useMemo(
+		() => ({ sorting, pagination: { pageSize, pageIndex }, columnFilters }),
+		[columnFilters, pageIndex, pageSize, sorting],
+	);
+	const { data, isLoading } = useJobs(key, autoRefresh);
 
 	const table = useReactTable({
 		data: data?.results ?? [],
@@ -71,55 +77,57 @@ export function DataTable() {
 	});
 
 	return (
-		<div className="space-y-4">
-			<DataTableToolbar table={table} />
-			<div className="rounded-md border relative">
-				{isLoading && <Spinner size={48} className="opacity-60 absolute inset-1/2 z-10" />}
-				<Table>
-					<TableHeader>
-						{table.getHeaderGroups().map((headerGroup) => (
-							<TableRow key={headerGroup.id}>
-								{headerGroup.headers.map((header) => {
-									return (
-										<TableHead key={header.id} colSpan={header.colSpan}>
-											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-										</TableHead>
-									);
-								})}
-							</TableRow>
-						))}
-					</TableHeader>
-					<TableBody>
-						{table.getRowModel().rows?.length ? (
-							table.getRowModel().rows.map((row) => (
-								<Fragment key={row.id}>
-									<TableRow>
-										{row.getVisibleCells().map((cell) => (
-											<TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-										))}
-									</TableRow>
-									{row.getIsExpanded() && (
+		<UseJobsKeyProvider value={key}>
+			<div className="space-y-4">
+				<DataTableToolbar table={table} isAutoRefreshing={autoRefresh} onClickAutoRefresh={toggleAutoRefresh} />
+				<div className="rounded-md border relative">
+					{isLoading && <Spinner size={48} className="opacity-60 absolute inset-1/2 z-10" />}
+					<Table>
+						<TableHeader>
+							{table.getHeaderGroups().map((headerGroup) => (
+								<TableRow key={headerGroup.id}>
+									{headerGroup.headers.map((header) => {
+										return (
+											<TableHead key={header.id} colSpan={header.colSpan}>
+												{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+											</TableHead>
+										);
+									})}
+								</TableRow>
+							))}
+						</TableHeader>
+						<TableBody>
+							{table.getRowModel().rows?.length ? (
+								table.getRowModel().rows.map((row) => (
+									<Fragment key={row.id}>
 										<TableRow>
-											<TableCell colSpan={row.getVisibleCells().length}>
-												<div className="max-w-screen-md">
-													<JobDetailsShow id={row.original.id} />
-												</div>
-											</TableCell>
+											{row.getVisibleCells().map((cell) => (
+												<TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+											))}
 										</TableRow>
-									)}
-								</Fragment>
-							))
-						) : (
-							<TableRow>
-								<TableCell colSpan={columns.length} className="h-24 text-center">
-									{!isLoading && 'No results.'}
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
+										{row.getIsExpanded() && (
+											<TableRow>
+												<TableCell colSpan={row.getVisibleCells().length}>
+													<div className="max-w-screen-md">
+														<JobDetailsShow id={row.original.id} />
+													</div>
+												</TableCell>
+											</TableRow>
+										)}
+									</Fragment>
+								))
+							) : (
+								<TableRow>
+									<TableCell colSpan={columns.length} className="h-24 text-center">
+										{!isLoading && 'No results.'}
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+				</div>
+				<DataTablePagination table={table} />
 			</div>
-			<DataTablePagination table={table} />
-		</div>
+		</UseJobsKeyProvider>
 	);
 }

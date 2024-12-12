@@ -1,4 +1,4 @@
-import { Cross2Icon, PlusIcon, CrossCircledIcon } from '@radix-ui/react-icons';
+import { Cross2Icon, PlusIcon, CrossCircledIcon, DotFilledIcon, DotIcon } from '@radix-ui/react-icons';
 import { Table } from '@tanstack/react-table';
 
 import { Button } from '@/components/ui/button';
@@ -19,22 +19,21 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog.tsx';
-import { useJobs } from '@/hooks/useJobs.ts';
+import { Job } from '@/types.ts';
+import { useJobDelete } from '@/hooks/useJobDelete.ts';
 
 interface DataTableToolbarProps<TData> {
 	table: Table<TData>;
+	isAutoRefreshing: boolean;
+	onClickAutoRefresh: () => void;
 }
 
-export function DataTableToolbar<TData extends { id: string }>({ table }: DataTableToolbarProps<TData>) {
+export function DataTableToolbar<TData extends Job>({ table, isAutoRefreshing, onClickAutoRefresh }: DataTableToolbarProps<TData>) {
 	const isFiltered = table.getState().columnFilters.length > 0;
 	const { data: bindings = [] } = useAvailableBindings(true);
 	const [openNewJob, setOpenNewJob] = useState(false);
 	const [openDelete, onOpenChangeDelete] = useState(false);
-	const { deleteMany } = useJobs({
-		sorting: table.getState().sorting,
-		columnFilters: table.getState().columnFilters,
-		pagination: table.getState().pagination,
-	});
+	const { deleteJobs } = useJobDelete();
 
 	return (
 		<div className="flex items-center justify-between">
@@ -61,9 +60,21 @@ export function DataTableToolbar<TData extends { id: string }>({ table }: DataTa
 				)}
 			</div>
 			<div className="flex flex-1 items-center space-x-2">
+				<Button
+					variant="outline"
+					size="sm"
+					className="ml-auto h-8"
+					onClick={onClickAutoRefresh}
+					title={isAutoRefreshing ? 'Pause auto refresh' : 'Enable auto refresh'}
+				>
+					{isAutoRefreshing ? (
+						<DotFilledIcon className="size-4 text-green-400 animate-pulse" />
+					) : (
+						<DotIcon className="size-4 text-gray-400" />
+					)}
+				</Button>
 				<DataTableViewOptions table={table} />
 				<NewJobDialog
-					table={table}
 					open={openNewJob}
 					onOpenChange={setOpenNewJob}
 					trigger={
@@ -73,7 +84,7 @@ export function DataTableToolbar<TData extends { id: string }>({ table }: DataTa
 					}
 				/>
 				<DeleteRowsDialog
-					deleteJob={() => deleteMany(table.getSelectedRowModel().rows.map((r) => r.original.id))}
+					deleteJob={() => deleteJobs(table.getSelectedRowModel().rows.map((r) => r.original.id))}
 					open={openDelete}
 					onOpenChange={onOpenChangeDelete}
 					count={table.getSelectedRowModel().rows.length}

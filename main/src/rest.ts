@@ -80,7 +80,9 @@ app.post(
 		'json',
 		z.object({
 			binding: z.string().min(1),
-			payload: z.string().min(1).refine(jsonParsable, { message: 'Invalid JSON' }),
+			payload: z.string().min(1, 'Payload must be at least 1 character long').refine(jsonParsable, {
+				message: 'Payload must be a valid JSON string',
+			}),
 			params: z
 				.object({
 					maxRetries: z.number().min(1).optional(),

@@ -13,25 +13,24 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
-import { useJobDetails, useJobs } from '@/hooks/useJobs.ts';
 import { NewJobDialog } from '@/components/new-job-dialog.tsx';
 import { Job } from '@/types.ts';
+import { useJobDetails } from '@/hooks/useJobDetails.ts';
+import { useJobDelete } from '@/hooks/useJobDelete.ts';
+import { useJobCancel } from '@/hooks/useJobCancel.ts';
 
 interface DataTableRowActionsProps<TData extends Job> {
 	row: Row<TData>;
 	table: Table<TData>;
 }
 
-export function DataTableRowActions<TData extends Job>({ row, table }: DataTableRowActionsProps<TData>) {
+export function DataTableRowActions<TData extends Job>({ row }: DataTableRowActionsProps<TData>) {
 	const [openDelete, onOpenChangeDelete] = useState(false);
 	const [openCancel, onOpenChangeCancel] = useState(false);
 	const [openCopy, onOpenChangeCopy] = useState(false);
-	const { deleteJob, cancel } = useJobs({
-		sorting: table.getState().sorting,
-		columnFilters: table.getState().columnFilters,
-		pagination: table.getState().pagination,
-	});
 	const { data } = useJobDetails(openCopy ? row.original.id : undefined);
+	const { deleteJobs } = useJobDelete();
+	const { cancelJob } = useJobCancel();
 
 	return (
 		<>
@@ -59,9 +58,9 @@ export function DataTableRowActions<TData extends Job>({ row, table }: DataTable
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
-			<DeleteRowDialog deleteJob={() => deleteJob(row.original.id)} open={openDelete} onOpenChange={onOpenChangeDelete} />
-			<CancelRowDialog cancel={() => cancel(row.original.id)} open={openCancel} onOpenChange={onOpenChangeCancel} />
-			{data && <NewJobDialog table={table} open={openCopy} onOpenChange={onOpenChangeCopy} initialData={data} />}
+			<DeleteRowDialog deleteJob={() => deleteJobs(row.original.id)} open={openDelete} onOpenChange={onOpenChangeDelete} />
+			<CancelRowDialog cancel={() => cancelJob(row.original.id)} open={openCancel} onOpenChange={onOpenChangeCancel} />
+			{data && <NewJobDialog open={openCopy} onOpenChange={onOpenChangeCopy} initialData={data} />}
 		</>
 	);
 }
