@@ -67,7 +67,7 @@ export function DataTable() {
 		enableRowSelection: true,
 		onRowSelectionChange: setRowSelection,
 		getExpandedRowModel: getExpandedRowModel(),
-		getRowCanExpand: (row) => row.original.attempts > 0 && row.original.status !== 'PROCESSING',
+		getRowCanExpand: () => true,
 	});
 
 	return (

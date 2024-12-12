@@ -1,7 +1,10 @@
 import { useJobDetails } from '@/hooks/useJobs.ts';
+import { Spinner } from '@/components/spinner.tsx';
 
 export const JobDetailsShow = ({ id }: { id: string }) => {
-	const { data } = useJobDetails(id);
+	const { data, isLoading } = useJobDetails(id);
+
+	if (isLoading) return <Spinner />;
 
 	if (!data) return null;
 
@@ -52,7 +55,7 @@ export const JobDetailsShow = ({ id }: { id: string }) => {
 								</div>
 								<div className="grid grid-cols-4 gap-4">
 									<dt className="text-muted-foreground">Processing Time</dt>
-									<dd className="col-span-3">{res.processingTime}ms</dd>
+									<dd className="col-span-3">{res.processingTime.toLocaleString()} ms</dd>
 								</div>
 								{res.error && (
 									<div className="grid grid-cols-4 gap-4">
