@@ -7,6 +7,7 @@ export default class extends Kiribi {
 	client = client;
 	rest = rest;
 	defaultMaxRetries = 1;
+	defaultTimeout = 10;
 
 	async onSuccess(binding: string, payload: any, result: any, meta: SuccessHandlerMeta) {
 		console.log(result);

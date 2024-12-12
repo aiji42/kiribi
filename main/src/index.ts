@@ -25,11 +25,19 @@ export type SuccessHandlerMeta = { startedAt: Date; finishedAt: Date; attempts: 
 
 export type FailureHandlerMeta = { startedAt: Date; finishedAt: Date; isFinal: boolean; attempts: number };
 
+export class KiribiTimeoutError extends Error {
+	constructor(public readonly job: Job) {
+		super(`Job (${job.binding}) timed out`);
+		this.name = 'KiribiTimeoutError';
+	}
+}
+
 export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> extends WorkerEntrypoint<B> {
 	private db: DB;
 	public client: typeof client | null = null;
 	public rest: typeof rest | null = null;
 	public defaultMaxRetries: number = 3;
+	public defaultTimeout: number = 0;
 
 	constructor(ctx: ExecutionContext, env: B) {
 		super(ctx, env);
@@ -168,7 +176,17 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 					// @ts-ignore
 					const service = this.env[bindingName];
 					if (!service) throw new Error(`Service Binding not found: ${bindingName}`);
-					const result = await service.perform(payload);
+
+					const timeout = params.timeout ?? this.defaultTimeout;
+					let result: any;
+					if (timeout > 0) {
+						result = await Promise.race([
+							service.perform(payload),
+							new Promise((_, reject) => setTimeout(() => reject(new KiribiTimeoutError(job)), timeout * 1000)),
+						]);
+					} else {
+						result = await service.perform(payload);
+					}
 
 					const completedAt = new Date();
 					data.status = jobStatus.completed;

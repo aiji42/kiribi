@@ -17,6 +17,7 @@ export type JobDetails = Job & {
 		maxRetries?: number;
 		retryDelay?: number | { exponential: boolean; base: number };
 		firstDelay?: number;
+		timeout?: number;
 	} | null;
 	result:
 		| {

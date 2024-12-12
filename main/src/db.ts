@@ -18,6 +18,7 @@ export type EnqueueOptions = {
 	maxRetries?: number;
 	retryDelay?: number | { exponential: boolean; base: number };
 	firstDelay?: number;
+	timeout?: number;
 };
 
 export type Result = { status: 'success' | 'failed'; error: string | null; startedAt: number; finishedAt: number; processingTime: number };

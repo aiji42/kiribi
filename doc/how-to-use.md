@@ -32,6 +32,7 @@ type EnqueueOptions = {
   maxRetries?: number
   firstDelay?: number
   retryDelay?: number | { exponential: boolean; base: number }
+  timeout?: number
 }
 ```
 
@@ -49,14 +50,17 @@ type EnqueueOptions = {
   - `retryDelay`(Optional): The delay seconds before the next retry. The default value is 0.
     - If `number`, the delay is fixed every time.
     - If `{ exponential: true, base: number }`, the delay is increased exponentially every time. The delay is calculated as `base^retryCount`.
+  - `timeout`(Optional): The timeout seconds for processing the job. The default value is 0 (no timeout).
+    - If the job processing time exceeds the timeout, the job throws `KiribiTimeoutError` and is retried according to the `maxRetries` and `retryDelay`.
 
 :::info
-The default value of `maxRetries` is set in Kiribi Worker's `defaultMaxRetries` property and can be changed.
+The default value of `maxRetries` and `timeout` can be set in the Kiribi Worker class.
 ```typescript
 import { Kiribi } from 'kiribi'
 
 export default class extends Kiribi {
   defaultMaxRetries = 1 // [!code highlight]
+  defaultTimeout = 60 // [!code highlight]
 }
 ```
 :::
