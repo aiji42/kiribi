@@ -132,6 +132,7 @@ interface SuccessHandlerMeta {
   startedAt: Date;
   finishedAt: Date;
   attempts: number;
+  params: EnqueueOptions;
 }
 ```
 
@@ -142,6 +143,7 @@ interface SuccessHandlerMeta {
   - `startedAt`: The time the job started.
   - `finishedAt`: The time the job finished.
   - `attempts`: The number of attempts the job took to complete.
+  - `params`: The options of the job.
 
 ### `onFailure` method
 
@@ -157,6 +159,7 @@ interface FailureHandlerMeta {
   finishedAt: Date;
   attempts: number;
   isFinal: boolean
+  params: EnqueueOptions;
 }
 ```
 
@@ -168,6 +171,7 @@ interface FailureHandlerMeta {
   - `finishedAt`: The time the job finished.
   - `attempts`: The number of attempts the job took to complete.
   - `isFinal`: Whether the job has reached the maximum number of retries.
+  - `params`: The options of the job.
 
 `onFailure` is called when the job fails, and `isFinal` is `true` when the job has reached the maximum number of retries.
 

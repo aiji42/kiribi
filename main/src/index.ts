@@ -21,9 +21,9 @@ type EnqueueArgs<M extends Performers> = {
 	[K in keyof M]: [K, InferPayload<M[K]>, EnqueueOptions?];
 }[keyof M];
 
-export type SuccessHandlerMeta = { startedAt: Date; finishedAt: Date; attempts: number };
+export type SuccessHandlerMeta = { startedAt: Date; finishedAt: Date; attempts: number; params: EnqueueOptions };
 
-export type FailureHandlerMeta = { startedAt: Date; finishedAt: Date; isFinal: boolean; attempts: number };
+export type FailureHandlerMeta = { startedAt: Date; finishedAt: Date; attempts: number; params: EnqueueOptions; isFinal: boolean };
 
 export class KiribiTimeoutError extends Error {
 	constructor(public readonly job: Job) {
@@ -206,6 +206,7 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 						startedAt,
 						finishedAt: completedAt,
 						attempts,
+						params,
 					})?.catch((err) => console.error(err));
 				} catch (err) {
 					const retryable = attempts < (params.maxRetries ?? this.defaultMaxRetries);
@@ -226,6 +227,7 @@ export class Kiribi<T extends Performers = any, B extends Bindings = Bindings> e
 						finishedAt,
 						isFinal: !retryable,
 						attempts,
+						params,
 					})?.catch(console.error);
 				} finally {
 					await this.db.jobUpdateOne(msg.body.id, data);
